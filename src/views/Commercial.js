@@ -1,9 +1,10 @@
 import React from 'react'
 import Divider from '@material-ui/core/Divider';
 
-import CommercialInfo from '../components/commercial_info'
+import CommercialInfo from '../components/commercial/commercial_info'
 import CommercialEtu from '../components/commercial_etu/commercial_etu'
-import CommercialCardStat from '../components/commercial_card_stat'
+import CommercialCardStat from '../components/commercial/commercial_card_stat'
+import CommercialCardAction from '../components/commercial/commercial_card_action'
 
 import DesktopMacIcon from '@material-ui/icons/DesktopMac';
 import EqualizerIcon from '@material-ui/icons/Equalizer';
@@ -47,6 +48,9 @@ export default function Commercial() {
                     <CommercialCardStat text='16 Études' size='45' color='dark'> 
                         <TouchAppIcon style={{ color: "#071E3D",fontSize: '2rem',marginBottom:15}} />
                     </CommercialCardStat>
+
+                    <CommercialCardAction />
+                    <CommercialCardAction />
                 </section>
             </div>
 

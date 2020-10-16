@@ -3,6 +3,7 @@ import { BrowserRouter, Route } from "react-router-dom";
 
 import Home from './views/Home'
 import Commercial from './views/Commercial'
+import CommercialAddPc from './views/Commercial_add_pc'
 import Navbar from './views/Navbar'
 import './scss/App.css';
 
@@ -13,6 +14,7 @@ function App() {
         <Navbar />
         <Route exact path="/" component={Home}/>
         <Route exact path="/commercial" component={Commercial}/>
+        <Route exact path="/commercial/add/pc" component={CommercialAddPc}/>
       </BrowserRouter>
     </div>
   );
