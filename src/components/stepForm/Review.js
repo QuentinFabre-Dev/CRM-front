@@ -11,7 +11,7 @@ import ListItemText from '@material-ui/core/ListItemText'
 import IconButton from '@material-ui/core/IconButton';
 import EditIcon from '@material-ui/icons/Edit';
 
-export const Review = ({ formData, navigation,phasesList}) => {
+export const Review = ({ formData, navigation,phasesList,totalPhase}) => {
   const { go } = navigation;
   const {
     reference,
@@ -21,9 +21,14 @@ export const Review = ({ formData, navigation,phasesList}) => {
     tel,
     typeEtude,
     cdp,
-    dateDebut,
-    dateFin
   } = formData;
+
+  function handleErrors(response) {
+    if (!response.ok) {
+        throw Error(response.statusText);
+    }
+    return response;
+}
 
   const valid = (phases) =>{
     fetch('http://localhost:5000/api/pc/add', {
@@ -32,11 +37,13 @@ export const Review = ({ formData, navigation,phasesList}) => {
         'Content-Type': 'application/json'
       },
         method: "POST",
-        body: JSON.stringify({formData,phases})
+        body: JSON.stringify({formData,phases,totalPhase})
       })
+        .then(handleErrors)
         .then(res => res.json())
-        .then(lol => console.log(lol));
-    go('submit')
+          .then(succ => go('submit'))
+        .catch(err => go('submitError'))
+
   }
   
   return (
@@ -47,8 +54,6 @@ export const Review = ({ formData, navigation,phasesList}) => {
         { 'Type Etude ': typeEtude },
         { 'Chef de projet ': cdp },
         { 'Nom étude ': nomEtude },
-        { 'Date début ': dateDebut },
-        { 'Date fin ': dateFin },
       ]} />
       <RenderAccordion summary="Client" go={ go } details={[
         { 'Nom client ': nomClient },
@@ -62,7 +67,7 @@ export const Review = ({ formData, navigation,phasesList}) => {
         color="primary"
         variant="contained"
         style={{ marginTop: '1.5rem' }}
-        onClick={() => valid(phasesList)}
+        onClick={() => valid(phasesList,totalPhase)}
       >
         Enregistrer la propale
       </Button>

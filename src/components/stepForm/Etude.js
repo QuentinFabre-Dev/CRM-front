@@ -14,7 +14,7 @@ import {
 } from '@material-ui/pickers';
 
 export const Etude = ({ formData, setForm, navigation }) => {
-  const { reference, nomEtude,typeEtude,cdp,dateDebut,dateFin,description } = formData;
+  const { reference, nomEtude,typeEtude,cdp,description } = formData;
   const [selectedDate, setSelectedDate] = React.useState(new Date('2014-08-18T21:11:54'));
 
   const handleDateChange = (date) => {
@@ -57,7 +57,7 @@ export const Etude = ({ formData, setForm, navigation }) => {
         fullWidth
       >
         <MenuItem value="Web">Site web</MenuItem>
-        <MenuItem value="Mobile">Application Mobile</MenuItem>
+        <MenuItem value="App Mobile">Application Mobile</MenuItem>
         <MenuItem value="Etude">Science de l'entreprise</MenuItem>
       </Select>
       
@@ -87,24 +87,7 @@ export const Etude = ({ formData, setForm, navigation }) => {
             }}
           />
         </MuiPickersUtilsProvider> */}
-      <TextField
-        label="Date début (J/M/Y)"
-        name="dateDebut"
-        value={dateDebut}
-        onChange={setForm}
-        margin="normal"
-        variant="outlined"
-        autoComplete="off"
-      />
-      <TextField
-        label="Date Fin (J/M/Y)"
-        name="dateFin"
-        value={dateFin}
-        onChange={setForm}
-        margin="normal"
-        variant="outlined"
-        autoComplete="off"
-      />
+
       <TextField
         label="Chef de projet"
         name="cdp"

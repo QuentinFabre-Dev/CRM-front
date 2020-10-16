@@ -10,6 +10,7 @@ export const Budget = ({ formData, setForm, navigation,setPhases }) => {
   const { listPhases } = formData;
 
   const [total, settotal] = useState({semaine :1,JEH:1,prix : 400})
+
   const [inputList,setInputList] = useState([
     {phase : "Analyse et conception", semaine :1 , NbJEH : 1,PrixJEH : 400}
   ])
@@ -57,7 +58,7 @@ export const Budget = ({ formData, setForm, navigation,setPhases }) => {
   }
 
   const valid = () =>{
-    setPhases(inputList)
+    setPhases(inputList,total)
     navigation.next()
   }
 

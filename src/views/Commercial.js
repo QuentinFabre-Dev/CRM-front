@@ -27,8 +27,8 @@ export default function Commercial() {
                 
             <div className='flex flex-row'>
                 <section className='flex flex-col' style={{width:'73%'}}>
-                    <CommercialEtu />
-                    <CommercialEtu />
+                    <CommercialEtu data='etu'/>
+                    <CommercialEtu data='pc'/>
                 </section>
                 
                 <section className='ml-24 content-start justify-between flex flex-row flex-wrap' style={{width:'20%'}}>

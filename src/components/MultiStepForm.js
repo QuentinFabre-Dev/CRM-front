@@ -6,6 +6,8 @@ import { Client } from "./stepForm/Client";
 import { Contact } from "./stepForm/Contact";
 import { Review } from "./stepForm/Review";
 import { Submit } from "./stepForm/Submit";
+import { SubmitError } from "./stepForm/SubmitError";
+
 
 const defaultData = {
   reference: "",
@@ -17,7 +19,10 @@ const defaultData = {
   cdp : "",
   dateDebut : "",
   dateFin : "",
-  description : ""
+  description : "",
+  totalJEH :"",
+  totalSemaine : "",
+  TotalPrix : ""
 };
 
 const steps = [
@@ -26,24 +31,28 @@ const steps = [
   { id: "budget" },
   { id: "review" },
   { id: "submit" },
+  { id: "submitError" },
 ];
 
 
 export default function MultiStepForm (){
   const [formData, setForm] = useForm(defaultData);
   const [phasesList, setPhasesList] = useState([]);
+  const [totalPhase, settotalPhase] = useState()
+  
   const { step, navigation } = useStep({
     steps,
     initialStep: 0,
   });
 
   
-  function setPhases (item) {
+  function setPhases (item,total) {
     setPhasesList(item)
+    settotalPhase(total)
     navigation.next()
   }
   
-  const props = { formData, setForm, navigation, setPhases,phasesList};
+  const props = { formData, setForm, navigation, setPhases,phasesList,totalPhase};
 
   switch (step.id) {
     case "etude":
@@ -56,6 +65,8 @@ export default function MultiStepForm (){
       return <Review {...props} />;
     case "submit":
       return <Submit {...props} />;
+    case "submitError":
+      return <SubmitError {...props} />;
   }
 
   return (
