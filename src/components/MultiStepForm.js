@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import { useForm, useStep } from "react-hooks-helper";
 import { Etude } from "./stepForm/Etude";
 import { Budget } from "./stepForm/Budget";
@@ -8,6 +8,7 @@ import { Review } from "./stepForm/Review";
 import { Submit } from "./stepForm/Submit";
 import { SubmitError } from "./stepForm/SubmitError";
 
+import { Link, useLocation, BrowserRouter as Router } from "react-router-dom";  
 
 const defaultData = {
   reference: "",
@@ -34,16 +35,39 @@ const steps = [
   { id: "submitError" },
 ];
 
+function useQuery() {
+  return new URLSearchParams(useLocation().search);
+}
+
 
 export default function MultiStepForm (){
+  let query = useQuery();
+  
+
   const [formData, setForm] = useForm(defaultData);
   const [phasesList, setPhasesList] = useState([]);
   const [totalPhase, settotalPhase] = useState()
+  const [dataLoaded, setdataLoaded] = useState()
   
   const { step, navigation } = useStep({
     steps,
     initialStep: 0,
   });
+
+  useEffect(() => {
+    if(query.get("idPC")){
+      fetch('http://localhost:5000/api/pc/'+query.get("idPC"), {
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+        method: "GET"
+      })
+        .then(res => res.json())
+        .then(res => setdataLoaded(res))
+    } 
+    
+  }, [])
 
   
   function setPhases (item,total) {
@@ -53,6 +77,22 @@ export default function MultiStepForm (){
   }
   
   const props = { formData, setForm, navigation, setPhases,phasesList,totalPhase};
+  
+  if(dataLoaded){
+    defaultData.reference = dataLoaded.reference
+    defaultData.typeEtude  = dataLoaded.typeEtude
+    defaultData.nomEtude = dataLoaded.nomEtude
+    defaultData.nomClient = dataLoaded.nomClient
+    defaultData.mail = dataLoaded.mail
+    defaultData.tel = dataLoaded.tel
+    defaultData.cdp  = dataLoaded.cdp
+    defaultData.dateDebut  = dataLoaded.dateDebut
+    defaultData.dateFin  = dataLoaded.dateFin
+    defaultData.description  = dataLoaded.description
+    defaultData.totalJEH = dataLoaded.totalJEH
+    defaultData.totalSemaine  = dataLoaded.totalSemaine
+    defaultData.TotalPrix = dataLoaded.TotalPrix
+  }
 
   switch (step.id) {
     case "etude":

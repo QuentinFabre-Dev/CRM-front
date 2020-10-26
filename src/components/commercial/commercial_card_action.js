@@ -14,7 +14,7 @@ export default function CommercialCardAction(props) {
                 </div>
                 <p className='text-xs font-thin pl-5'>Consulter les documents des études</p>
            </span>
-            <span className="flex bg-red-500" style={{width:'30%'}}>
+            <span className="flex bg-red-500" style={{width:'30%',height:90}}>
                 <img src='../../assets/images/etudes.png' />
             </span>
         </a>

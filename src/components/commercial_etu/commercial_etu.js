@@ -8,7 +8,16 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
+import DeleteOutlineOutlinedIcon from '@material-ui/icons/DeleteOutlineOutlined';
 import MoreHorizIcon from '@material-ui/icons/MoreHoriz';
+
+import IconButton from '@material-ui/core/IconButton';
+import DeleteIcon from '@material-ui/icons/Delete';
+import SearchIcon from '@material-ui/icons/Search';
+
+import Button from '@material-ui/core/Button';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
 
 
 import Status from './commercial_status'
@@ -41,7 +50,33 @@ export default function CommercialEtu(props) {
         .then(res => res.json())
         .then(res => setdataPC(res))
     
-  },[])
+  },[setdataPC])
+
+  // const [anchorEl, setAnchorEl] = React.useState(null);
+
+  // const handleClick = (event) => {
+  //   setAnchorEl(event.currentTarget);
+  // };
+
+  // const handleClose = () => {
+  //   setAnchorEl(null);
+  // };
+
+  const deleteItem = (id) =>{
+    // var url = new URL("http://localhost:5000/api/pc/delete"),
+    // params = {idPC:id}
+    // Object.keys(params).forEach(key => url.searchParams.append(key, params[key]))
+    
+    fetch(`http://localhost:5000/api/pc/delete/${id}`, {
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+        method: "POST"
+      })
+      .then(res => res.json())
+      .then(res => setdataPC(res))
+  }
 
   return (
     <span className='mt-5' style={{overflow:'scroll'}}>
@@ -97,7 +132,36 @@ export default function CommercialEtu(props) {
 
                </>  
                }
-              <TableCell align="center"><Link to={`commercial/${props.data}?num=${row.reference}`}><MoreHorizIcon/></Link></TableCell>
+              <TableCell align="center">
+                {/* <IconButton aria-label="delete" onClick={() =>deleteItem(row.reference)}>
+                  <DeleteIcon />
+                </IconButton> */}
+                <Link to={{
+                    pathname: "/commercial/pc/view",
+                    search: `?idPC=${row.reference}`,
+                  }}>
+                    <SearchIcon />
+                </Link>
+              </TableCell>
+
+              {/* <TableCell align="center">
+              <div>
+                  <Button aria-controls="simple-menu" aria-haspopup="true" onClick={handleClick}>
+                    <MoreHorizIcon/>
+                  </Button>
+                  <Menu
+                    id="simple-menu"
+                    anchorEl={anchorEl}
+                    keepMounted
+                    open={Boolean(anchorEl)}
+                    onClose={handleClose}
+                  >
+                    <MenuItem onClick={handleClose}>Voir</MenuItem>
+                    <MenuItem onClick={handleClose,()=> deleteItem(row.reference)}>Supprimer</MenuItem>
+                  </Menu>
+                </div>
+              </TableCell> */}
+
             </TableRow>
           ))}
         </TableBody>
