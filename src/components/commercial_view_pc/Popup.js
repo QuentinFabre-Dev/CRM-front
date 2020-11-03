@@ -28,7 +28,7 @@ export default function AlertDialog() {
   };
 
   const deleteItem = (id) =>{
-    fetch(`http://localhost:5000/api/pc/delete/${id}`, {
+    fetch(`https://cri-front.herokuapp.com/api/pc/delete/${id}`, {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json'

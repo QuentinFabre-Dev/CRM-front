@@ -56,7 +56,7 @@ export default function MultiStepForm (){
 
   useEffect(() => {
     if(query.get("idPC")){
-      fetch('http://localhost:5000/api/pc/'+query.get("idPC"), {
+      fetch('https://cri-front.herokuapp.com/api/pc/'+query.get("idPC"), {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json'

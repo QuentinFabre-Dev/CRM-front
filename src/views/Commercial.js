@@ -42,7 +42,7 @@ export default function Commercial() {
         if(cookies.get('token'))
         {
           const cookie = cookies.get("token")
-          fetch('http://localhost:5000/api/pc', {
+          fetch('https://cri-front.herokuapp.com/api/pc', {
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',

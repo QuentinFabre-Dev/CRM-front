@@ -31,7 +31,7 @@ export const Review = ({ formData, navigation,phasesList,totalPhase}) => {
 }
 
   const valid = (phases) =>{
-    fetch('http://localhost:5000/api/pc/add', {
+    fetch('https://cri-front.herokuapp.com/api/pc/add', {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json'

@@ -44,7 +44,7 @@ const useStyles = makeStyles((theme) => ({
 
     const login = () => {
         setOpen(true)
-        fetch('http://localhost:5000/api/login', {
+        fetch('https://cri-front.herokuapp.com/api/login', {
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json',    
@@ -61,7 +61,7 @@ const useStyles = makeStyles((theme) => ({
 
             })
         })
-        .catch(err => console.log(err))
+        .catch(err => console.log(err), setOpen)
 
   }
 

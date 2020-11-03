@@ -19,7 +19,7 @@ export default function withAuth(ComponentToProtect) {
 
     componentDidMount() {
       const cookie = cookies.get("token")
-      fetch('http://localhost:5000/api/login/check', {
+      fetch('https://cri-front.herokuapp.com/api/login/check', {
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
