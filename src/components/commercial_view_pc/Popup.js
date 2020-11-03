@@ -8,7 +8,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import DeleteIcon from '@material-ui/icons/Delete';
 import {Redirect} from 'react-router-dom';
 
-import { Link, useLocation, BrowserRouter as Router } from "react-router-dom";  
+import { useLocation } from "react-router";  
 
 function useQuery() {
     return new URLSearchParams(useLocation().search);

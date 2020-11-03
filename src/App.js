@@ -13,12 +13,14 @@ function App() {
   return (
     <div className="App">
         <Router>
-          <Navbar />
-          <Route exact path="/" component={WithAuth(Home)}/>
-          <Route exact path="/commercial" component={WithAuth(Commercial)}/>
-          <Route exact path="/commercial/add/pc" component={CommercialAddPc}/>
-          <Route exact path="/commercial/pc/view" component={CommercialViewPc}/>
-          <Route exact path="/login" component={Login}/>
+          <div>
+            <Navbar />
+            <Route exact path="/" component={WithAuth(Home)}/>
+            <Route exact path="/commercial" component={WithAuth(Commercial)}/>
+            <Route exact path="/commercial/add/pc" component={CommercialAddPc}/>
+            <Route exact path="/commercial/pc/view" component={CommercialViewPc}/>
+            <Route exact path="/login" component={Login}/>
+          </div>
       </Router>
     </div>
   );

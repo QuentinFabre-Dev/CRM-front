@@ -13,7 +13,7 @@ import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import GavelIcon from '@material-ui/icons/Gavel';
 
-import { Link, useLocation, BrowserRouter as Router } from "react-router-dom";  
+import { useLocation } from "react-router";  
 
 
 function useQuery() {
