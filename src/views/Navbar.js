@@ -1,8 +1,33 @@
-import React from 'react'
+import React,{useEffect,useState} from 'react'
+import Cookies from 'universal-cookie';
 
-
+const cookies = new Cookies();
 
 function Navbar() {
+   
+  useEffect(() => {
+    if(cookies.get('token'))
+    {
+      const cookie = cookies.get("token")
+      fetch('http://localhost:5000/api/login/check', {
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': cookie
+            },
+            method: "POST",
+        })
+        .then(res => {
+          res.json()
+          .then(response => {
+            setUser(response)
+          })
+        })
+    }  
+  },[])
+
+  const [user, setUser] = useState({})
+
     return(
         <div>
   <nav className="bg-gray-800 mb-5">
@@ -36,6 +61,7 @@ function Navbar() {
             <div className="ml-3 relative">
               <div>
                 <button className="max-w-xs flex items-center text-sm rounded-full text-white focus:outline-none focus:shadow-solid" id="user-menu" aria-label="User menu" aria-haspopup="true">
+                  <p className="pr-5">Bonjour <span className="font-bold">{user.email} </span>!</p>
                   <img className="h-8 w-8 rounded-full" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="" />
                 </button>
               </div>

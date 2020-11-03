@@ -9,6 +9,16 @@ export default function CommercialStatus(props) {
             textColor = "#5EC556"
             break;
 
+        case "Validation Q":
+            id = "#fffbf0"
+            textColor = "#f0932b"
+            break;
+
+        case "Validation P":
+            id = "#fffbf0"
+            textColor = "#f0932b"
+            break;
+        
         case "Terminé":
             id = "#FDF5F6"
             textColor = "#E5464C"

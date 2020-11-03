@@ -109,7 +109,6 @@ export default function CommercialEtu(props) {
           </TableRow>
         </TableHead>
         <TableBody>
-          {console.log(dataPC)}
           {dataPC.map((row) => (
             <TableRow key={row.reference}>
               <TableCell align="left">{row.reference}</TableCell>
@@ -117,7 +116,7 @@ export default function CommercialEtu(props) {
               <TableCell align="left">{row.description}</TableCell>
               <TableCell align="left">{row.cdp}</TableCell>
               <TableCell align="left"><Status status={row.typeEtude}/></TableCell>
-              <TableCell align="left"><Status status="En cours"/></TableCell>
+              <TableCell align="left"><Status status="Validation Q"/></TableCell>
               {typeEtude ?
               <span>
                 <TableCell align="left">{row.dateDebut}</TableCell>
