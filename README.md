@@ -20,6 +20,7 @@ Le devis peut être convertie en étude pour la suite <br/>
 => Utiliastion de JWT (JsonWebToken) pour l'identification avec la base de données MongoDB Atlas <br/>
 
 <h2> Points faits : <br/></h2>
+<b>La téléchargement des PC : Actuellement un template est present et les données sont modifier. Un nouveau PPTX et générer dans backend. Cependant impossible d'arriver à le faire télécharger actuellement... c'est la seul étape manquante.</b>
 Mise en place de la structure React NodeJS Mongo <br/>
 Systeme de connexion (User : mic | Pwd : buffa) <br/>
 CRUD des PC <br/>
