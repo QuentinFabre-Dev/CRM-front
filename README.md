@@ -1,6 +1,6 @@
-<h1>* ========================================================= *
+<b>* ========================================================= *
 * Projet de développement web - FABRE QUENTIN 2020 M1 MIA.  *
-* ========================================================= *</h1>
+* ========================================================= *<b>
 
 <h2> Context du projet : <br/></h2>
 Dans le contexte de chef de projet et dans l'objetif de devenir vice president de l'association Junior MIAGE Concept Nice, j'ai voulu développer un debut de CRM (Customer Relationship Management) afin de pouvoir gérer toutes nos proposition commerciales (PC), ainsi que de pouvoir les ajouter,les rédiger, les éditer, et les supprimer (CRUD) ainsi que télécharger un document en pptx . L'objetif final étant de donner accés à tous les membres de l'association et d'avoir un visuel global sur l'état de la structure (actullement plus commercial) <br/>
