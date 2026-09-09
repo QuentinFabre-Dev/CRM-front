@@ -93,7 +93,7 @@ export default function ChargeabilitePage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-[22px] font-semibold tracking-tight">Chargeabilité</h1>
+        <h1 className="text-[22px] font-medium tracking-tight">Chargeabilité</h1>
         <p className="mt-1 text-[13px] text-muted-foreground">
           Objectif {target}% de chargeable sur l&apos;année fiscale {fiscalYear.label}.
         </p>
@@ -103,7 +103,7 @@ export default function ChargeabilitePage() {
         <Card className="p-6 lg:col-span-1">
           <p className="text-[13px] text-muted-foreground">Cumul année fiscale</p>
           <p
-            className="mt-1 text-[36px] font-semibold tracking-tight"
+            className="mt-1 text-[36px] font-medium tracking-tight"
             style={{ color: summary.percentage >= target ? STATUS.good : "inherit" }}
           >
             {summary.percentage}%
@@ -195,7 +195,7 @@ export default function ChargeabilitePage() {
           {[...yearEntries].reverse().map((entry) => {
             const pct = entry.totalHours > 0 ? Math.round((entry.chargeableHours / entry.totalHours) * 100) : 0;
             return (
-              <div key={entry.id} className="flex items-center justify-between rounded-lg px-2 py-2 -mx-2 hover:bg-muted">
+              <div key={entry.id} className="flex items-center justify-between rounded-md px-2 py-2 -mx-2 hover:bg-muted">
                 <div>
                   <p className="text-[13px] font-medium">
                     Semaine du {format(new Date(entry.weekStart), "d MMM yyyy", { locale: fr })}

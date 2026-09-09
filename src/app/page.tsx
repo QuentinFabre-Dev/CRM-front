@@ -12,11 +12,11 @@ import { formatCurrency } from "@/lib/format";
 import { CATEGORICAL } from "@/lib/chart-colors";
 import { PeriodTabs } from "@/components/dashboard/period-tabs";
 import { StatCard } from "@/components/dashboard/stat-card";
-import { PipelineChart } from "@/components/dashboard/pipeline-chart";
+import { EisenhowerMini } from "@/components/dashboard/eisenhower-mini";
+import { PipelineCompact } from "@/components/dashboard/pipeline-compact";
 import { SourcesBreakdown } from "@/components/dashboard/sources-breakdown";
 import { ChargeabilityWidget } from "@/components/dashboard/chargeability-widget";
 import { RelancesWidget } from "@/components/dashboard/relances-widget";
-import { TasksTodayWidget } from "@/components/dashboard/tasks-today-widget";
 import { ActivityFeed } from "@/components/dashboard/activity-feed";
 
 export default function DashboardPage() {
@@ -75,7 +75,7 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-[26px] font-semibold tracking-tight">{greeting} 👋</h1>
+          <h1 className="text-[28px] font-medium tracking-tight">{greeting}</h1>
           <p className="mt-1 text-[13px] text-muted-foreground">Voici ce qui se passe dans votre CRM.</p>
         </div>
         <PeriodTabs value={period} onChange={setPeriod} />
@@ -115,15 +115,15 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         <div className="xl:col-span-2">
-          <PipelineChart byStage={byStage} />
+          <EisenhowerMini />
         </div>
-        <SourcesBreakdown counts={sourceCounts} />
+        <RelancesWidget overdue={overdue} />
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <PipelineCompact byStage={byStage} />
+        <SourcesBreakdown counts={sourceCounts} />
         <ChargeabilityWidget summary={chargeabilitySummary} target={chargeabilityTarget} fiscalYear={fiscalYear} />
-        <RelancesWidget overdue={overdue} />
-        <TasksTodayWidget />
       </div>
 
       <ActivityFeed />

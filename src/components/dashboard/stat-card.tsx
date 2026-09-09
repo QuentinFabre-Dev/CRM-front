@@ -30,7 +30,7 @@ export function StatCard({
         </div>
         <div className="min-w-0">
           <p className="truncate text-[12px] text-muted-foreground">{label}</p>
-          <p className="text-[22px] font-semibold leading-tight tracking-tight">{value}</p>
+          <p className="text-[22px] font-medium leading-tight tracking-tight">{value}</p>
         </div>
       </div>
       {delta !== undefined && delta !== null && (

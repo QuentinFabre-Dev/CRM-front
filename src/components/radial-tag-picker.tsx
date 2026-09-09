@@ -129,7 +129,7 @@ export function RadialTagPicker({
             left: origin.x,
             top: origin.y,
             transform: "translate(-50%, -50%)",
-            filter: "drop-shadow(0 12px 28px hsl(var(--shadow-color) / 0.25))",
+            filter: "drop-shadow(0 12px 28px rgba(0,0,0,0.18))",
           }}
         >
           <circle r={RADIUS} fill="hsl(var(--surface))" stroke="hsl(var(--border))" strokeWidth={1} />

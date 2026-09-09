@@ -29,7 +29,7 @@ export default function OpportunitesPage() {
     <div className="space-y-5">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-[22px] font-semibold tracking-tight">Opportunités</h1>
+          <h1 className="text-[22px] font-medium tracking-tight">Opportunités</h1>
           <p className="mt-1 text-[13px] text-muted-foreground">{(opportunities ?? []).length} opportunité(s)</p>
         </div>
         <OpportunityFormDialog />
@@ -54,14 +54,14 @@ export default function OpportunitesPage() {
                 setDragOverStage(null);
               }}
               className={cn(
-                "flex w-72 shrink-0 flex-col rounded-xl border border-border bg-surface-2/60 p-3 transition-colors",
+                "flex w-72 shrink-0 flex-col rounded-md border border-border bg-surface-2/60 p-3 transition-colors",
                 dragOverStage === stage.id && "border-accent bg-accent/5"
               )}
             >
               <div className="mb-3 flex items-center justify-between px-1">
                 <div className="flex items-center gap-2">
                   <span className="h-2 w-2 rounded-full" style={{ backgroundColor: ORDINAL_BLUE[stageIndex] }} />
-                  <span className="text-[12.5px] font-semibold">{stage.title}</span>
+                  <span className="text-[12.5px] font-medium">{stage.title}</span>
                   <span className="text-[11px] text-muted-foreground">({items.length})</span>
                 </div>
               </div>
@@ -113,7 +113,7 @@ function OpportunityCard({
               </p>
             )}
             <div className="mt-2 flex items-center justify-between">
-              <span className="text-[13px] font-semibold">{formatCurrency(opp.amount)}</span>
+              <span className="text-[13px] font-medium">{formatCurrency(opp.amount)}</span>
               {opp.source && (
                 <Badge variant="outline" className="text-[10px]">
                   {opp.source}

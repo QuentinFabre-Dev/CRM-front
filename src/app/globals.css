@@ -3,37 +3,37 @@
 @tailwind utilities;
 
 :root {
-  --background: 220 23% 97%;
+  --background: 60 9% 98%;
   --surface: 0 0% 100%;
-  --surface-2: 220 20% 98%;
-  --border: 220 14% 90%;
-  --foreground: 224 20% 14%;
-  --muted: 220 16% 93%;
-  --muted-foreground: 220 9% 46%;
-  --accent: 211 100% 50%;
+  --surface-2: 40 9% 96%;
+  --border: 20 6% 90%;
+  --foreground: 20 14% 4%;
+  --muted: 24 6% 93%;
+  --muted-foreground: 25 5% 45%;
+  --accent: 205 87% 59%;
   --accent-foreground: 0 0% 100%;
-  --success: 145 63% 42%;
-  --warning: 32 95% 52%;
-  --danger: 4 86% 58%;
-  --violet: 255 65% 62%;
-  --shadow-color: 220 40% 20%;
+  --accent-wash: 204 77% 86%;
+  --success: 120 86% 34%;
+  --warning: 41 96% 54%;
+  --danger: 0 61% 52%;
+  --ink: 20 14% 4%;
 }
 
 .dark {
-  --background: 222 24% 9%;
-  --surface: 222 22% 12%;
-  --surface-2: 222 20% 15%;
-  --border: 222 16% 20%;
-  --foreground: 210 20% 96%;
-  --muted: 222 18% 17%;
-  --muted-foreground: 220 10% 65%;
-  --accent: 211 100% 60%;
-  --accent-foreground: 0 0% 100%;
-  --success: 145 55% 48%;
-  --warning: 32 90% 58%;
-  --danger: 4 80% 63%;
-  --violet: 255 70% 70%;
-  --shadow-color: 0 0% 0%;
+  --background: 24 10% 10%;
+  --surface: 24 9% 13%;
+  --surface-2: 24 9% 11%;
+  --border: 24 8% 21%;
+  --foreground: 40 9% 96%;
+  --muted: 24 8% 18%;
+  --muted-foreground: 24 6% 65%;
+  --accent: 205 90% 64%;
+  --accent-foreground: 24 10% 10%;
+  --accent-wash: 205 40% 22%;
+  --success: 120 55% 45%;
+  --warning: 41 90% 58%;
+  --danger: 0 65% 62%;
+  --ink: 40 9% 96%;
 }
 
 * {
@@ -52,12 +52,6 @@ body {
 
 ::selection {
   background: hsl(var(--accent) / 0.25);
-}
-
-.glass {
-  background: hsl(var(--surface) / 0.72);
-  backdrop-filter: saturate(180%) blur(20px);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
 }
 
 ::-webkit-scrollbar {

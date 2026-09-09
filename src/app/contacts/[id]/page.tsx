@@ -68,7 +68,7 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
       <Card className="p-6">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-[22px] font-semibold tracking-tight">{contact.name}</h1>
+            <h1 className="text-[22px] font-medium tracking-tight">{contact.name}</h1>
             <p className="mt-1 flex items-center gap-1.5 text-[13px] text-muted-foreground">
               <Building2 size={13} />
               {contact.role ? `${contact.role} · ` : ""}
@@ -140,7 +140,7 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
               <Link
                 key={opp.id}
                 href="/opportunites"
-                className="flex items-center justify-between rounded-lg px-2 py-2 -mx-2 hover:bg-muted"
+                className="flex items-center justify-between rounded-md px-2 py-2 -mx-2 hover:bg-muted"
               >
                 <div>
                   <p className="text-[13px] font-medium">{opp.title}</p>

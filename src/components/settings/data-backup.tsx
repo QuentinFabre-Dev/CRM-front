@@ -54,7 +54,7 @@ export function DataBackup() {
   return (
     <div className="space-y-4">
       <Card className="p-5">
-        <h3 className="text-[14px] font-semibold">Export / Import</h3>
+        <h3 className="text-[14px] font-medium">Export / Import</h3>
         <p className="mt-1 text-[13px] text-muted-foreground">
           Toutes vos données restent dans ce navigateur. Exportez régulièrement un JSON de sauvegarde, ou pour
           transférer vos données vers un autre appareil.
@@ -72,7 +72,7 @@ export function DataBackup() {
       </Card>
 
       <Card className="border-danger/30 p-5">
-        <h3 className="flex items-center gap-1.5 text-[14px] font-semibold text-danger">
+        <h3 className="flex items-center gap-1.5 text-[14px] font-medium text-danger">
           <AlertTriangle size={15} /> Zone de danger
         </h3>
         <p className="mt-1 text-[13px] text-muted-foreground">

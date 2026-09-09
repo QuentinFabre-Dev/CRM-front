@@ -21,7 +21,7 @@ export function RelancesWidget({ overdue }: { overdue: OverdueContact[] }) {
             <Link
               key={contact.id}
               href={`/contacts/${contact.id}`}
-              className="flex items-center justify-between rounded-lg px-2 py-2 -mx-2 transition-colors hover:bg-muted"
+              className="flex items-center justify-between rounded-md px-2 py-2 -mx-2 transition-colors hover:bg-muted"
             >
               <div className="flex items-center gap-2 min-w-0">
                 <AlertTriangle size={14} style={{ color: STATUS.critical }} />

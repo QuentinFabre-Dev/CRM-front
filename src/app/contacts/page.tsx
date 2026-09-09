@@ -31,7 +31,7 @@ export default function ContactsPage() {
     <div className="space-y-5">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-[22px] font-semibold tracking-tight">Contacts</h1>
+          <h1 className="text-[22px] font-medium tracking-tight">Contacts</h1>
           <p className="mt-1 text-[13px] text-muted-foreground">{filtered.length} contact(s)</p>
         </div>
         <ContactFormDialog />
@@ -48,7 +48,7 @@ export default function ContactsPage() {
             <Card className="p-4 transition hover:shadow-popover">
               <div className="flex items-start justify-between">
                 <div className="min-w-0">
-                  <p className="truncate text-[14px] font-semibold">{contact.name}</p>
+                  <p className="truncate text-[14px] font-medium">{contact.name}</p>
                   <p className="truncate text-[12.5px] text-muted-foreground">
                     {contact.role ? `${contact.role} · ` : ""}
                     {contact.company}

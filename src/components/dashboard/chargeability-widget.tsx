@@ -24,7 +24,7 @@ export function ChargeabilityWidget({
       </CardHeader>
       <CardContent>
         <div className="flex items-baseline gap-2">
-          <span className="text-[26px] font-semibold tracking-tight">{summary.percentage}%</span>
+          <span className="text-[26px] font-medium tracking-tight">{summary.percentage}%</span>
           <span className="text-[12px] text-muted-foreground">objectif {target}%</span>
         </div>
         <div className="relative mt-3 h-2.5 w-full rounded-full bg-muted">

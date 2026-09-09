@@ -51,7 +51,7 @@ export default function ObjectifsPage() {
     <div className="space-y-5">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-[22px] font-semibold tracking-tight">Objectifs</h1>
+          <h1 className="text-[22px] font-medium tracking-tight">Objectifs</h1>
           <p className="mt-1 text-[13px] text-muted-foreground">
             Normes de chargeabilité, de vente et autres objectifs personnels.
           </p>
@@ -123,8 +123,8 @@ export default function ObjectifsPage() {
             <p className="mt-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
               {TYPE_LABELS[target.type]}
             </p>
-            <p className="text-[14px] font-semibold">{target.label}</p>
-            <p className="text-[20px] font-semibold tracking-tight">
+            <p className="text-[14px] font-medium">{target.label}</p>
+            <p className="text-[20px] font-medium tracking-tight">
               {target.value}
               {target.unit}
             </p>

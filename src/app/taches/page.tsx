@@ -27,7 +27,7 @@ export default function TachesPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-[22px] font-semibold tracking-tight">Matrice d&apos;Eisenhower</h1>
+        <h1 className="text-[22px] font-medium tracking-tight">Matrice d&apos;Eisenhower</h1>
         <p className="mt-1 text-[13px] text-muted-foreground">
           Glissez une tâche pour changer de quadrant · maintenez le clic dessus pour lui poser un tag via la roue.
         </p>
@@ -51,14 +51,14 @@ export default function TachesPage() {
                 setDragOverQuadrant(null);
               }}
               className={cn(
-                "min-h-[260px] rounded-xl border border-border bg-surface-2/60 p-4 transition-colors",
+                "min-h-[260px] rounded-md border border-border bg-surface-2/60 p-4 transition-colors",
                 dragOverQuadrant === q.id && "border-accent bg-accent/5"
               )}
             >
               <div className="mb-3 flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full" style={{ backgroundColor: QUADRANT_TINTS[q.id] }} />
                 <div>
-                  <p className="text-[13px] font-semibold">{q.title}</p>
+                  <p className="text-[13px] font-medium">{q.title}</p>
                   <p className="text-[11px] text-muted-foreground">{q.subtitle}</p>
                 </div>
               </div>
