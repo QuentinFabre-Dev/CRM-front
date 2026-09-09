@@ -1,48 +1,54 @@
-<b>* ========================================================= *
-* Projet de développement web - FABRE QUENTIN 2020 M1 MIA.  *
-* ========================================================= *<b>
+# NexaCRM
 
-<h2> Context du projet : <br/></h2>
-Dans le contexte de chef de projet et dans l'objetif de devenir vice president de l'association Junior MIAGE Concept Nice, j'ai voulu développer un debut de CRM (Customer Relationship Management) afin de pouvoir gérer toutes nos proposition commerciales (PC), ainsi que de pouvoir les ajouter,les rédiger, les éditer, et les supprimer (CRUD) ainsi que télécharger un document en pptx . L'objetif final étant de donner accés à tous les membres de l'association et d'avoir un visuel global sur l'état de la structure (actullement plus commercial) <br/>
+Mini CRM interne, local-first : opportunités commerciales, carnet de contacts avec
+relances, matrice d'Eisenhower et suivi de chargeabilité.
 
-<h2> Intro rapide au fonctionnement de Junior MIAGE Concept NICE pour comprendre l'outil : <br/></h2>
-L'association à 5 axes : Commercial, Trésorie, RH, Cadre légal, Stratégie & Pilotage <br/>
-Des PC sont des "devis" qui doivent être valider par le pôle qualité et notre président avant d'être envoyer au client <br/>
-Durant la validation des modifications peuvent etre apportées à la PC <br/>
-Le devis peut être convertie en étude pour la suite <br/>
+## Principe : zéro donnée hébergée
 
-<h2> Points technique : <br/></h2>
-=> Projet React JS / NodeJs / MongoDB Atlas <br/>
-=> Télécharger un .PPTX avec les données récues (presque fonctionnel)<br/>
-=> NodeJS / Express / Bcrypte / UniversalCookie / body-parser / cors / mongoose / docxtemplater pour les packages principales <br/>
-=> Pour l'UI : Matéterial UI https://material-ui.com ainsi que TailWindcss https://tailwindcss.com <br/>
-=> Utilisation de SCSS <br/>
-=> Utiliastion de JWT (JsonWebToken) pour l'identification avec la base de données MongoDB Atlas <br/>
+L'application peut être déployée en ligne (Vercel ou équivalent) pour être
+accessible depuis une URL, mais **aucune donnée métier ne transite ni n'est
+stockée côté serveur**. Contacts, opportunités, tâches, interactions et
+saisies de chargeabilité vivent uniquement dans le navigateur (IndexedDB, via
+[Dexie](https://dexie.org)). Aucune base de données, aucune API applicative.
 
-<h2> Points faits : <br/></h2>
-<b>La téléchargement des PC : Actuellement un template est present et les données sont modifier. Un nouveau PPTX et générer dans backend. Cependant impossible d'arriver à le faire télécharger actuellement... c'est la seul étape manquante.</b>
-Mise en place de la structure React NodeJS Mongo <br/>
-Systeme de connexion (User : mic | Pwd : buffa) <br/>
-CRUD des PC <br/>
-Mise en page de l'accuel la connexion et la partie commercial <br/>
-Visualisation des données (seulement le total des PC [Pipeline]) <br/>
- 
-<h2> A faire :  <br/></h2>
-Responsive design <br/>
-Inclure Reat Redux pour la gestion d'événement (En cours...) <br/>
-Visualisation de toutes les données (manque de temps) <br/>
-Ajout de different rôles à la connexion <br/>
-Les differents axes (RH,Stratégie...) <br/>
-••• <br/>
+- Usage mono-appareil : les données restent dans le navigateur qui les a créées.
+- Sauvegarde/transfert : export et import JSON complets depuis **Paramètres**.
+- Au premier lancement sans données, un jeu de données de démonstration est
+  généré automatiquement (voir `src/lib/seed.ts`).
 
+## Stack
 
-<h2> | Présention :  <br/> </h2>
-Se rendre sur https://crm-jmc.herokuapp.com/ et se connecter avec les identifiant (mic | buffa)  <br/>
-Sur la page d'accueil on voit différentes informations (fictive pour le moment, inscrit en brut dans le code) ainsi que les differents axes <br/>
-Selectionner la partie "Commercial" <br/>
-Visualitation de l'espace commercial, pour ajouter un devis cliquer sur Ajouter une PC <br/>
-Completer les informations <br/>
-Retour sur la page d'accueil, vous pouvez modifier une devis, le supprimer, et le convertir... <br/>
+- [Next.js 14](https://nextjs.org) (App Router) + TypeScript
+- Tailwind CSS + composants Radix (style inspiré d'Apple HIG)
+- [Dexie](https://dexie.org) / IndexedDB pour le stockage local
+- Recharts pour les graphiques, Framer Motion pour les animations
 
+## Fonctionnalités
 
+- **Accueil** — KPI, pipeline par étape, sources de prospects, chargeabilité,
+  relances en retard, tâches du jour, activité récente.
+- **Contacts** — fiche détaillée avec fil chronologique d'interactions
+  (appels, emails, lunchs, notes, réunions) et badge de relance après 60
+  jours sans contact.
+- **Opportunités** — vue Kanban par étape, liée aux contacts.
+- **Tâches** — matrice d'Eisenhower en glisser-déposer ; un clic maintenu sur
+  une tâche ouvre une roue radiale pour lui poser un tag libre.
+- **Chargeabilité** — saisie hebdomadaire, cumul sur l'année fiscale
+  (1 oct → 30 sept) et suivi de l'objectif (80% par défaut).
+- **Objectifs** — normes personnelles (chargeabilité, vente, autres),
+  librement extensibles.
+- **Paramètres** — gestion des tags, export/import JSON, remise à zéro.
 
+## Développement
+
+```bash
+npm install
+npm run dev
+```
+
+L'application est disponible sur http://localhost:3000.
+
+```bash
+npm run build   # build de production
+npm run lint    # ESLint
+```
