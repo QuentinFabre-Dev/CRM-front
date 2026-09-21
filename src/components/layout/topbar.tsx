@@ -1,23 +1,16 @@
 "use client";
 
-import { useLiveQuery } from "dexie-react-hooks";
-import { Search, Sun, Moon, Bell } from "lucide-react";
-import { db } from "@/lib/db";
-import { getOverdueContacts } from "@/lib/relances";
+import { Search, Sun, Moon } from "lucide-react";
 import { useTheme } from "@/components/theme-provider";
 
 export function Topbar() {
   const { theme, toggleTheme } = useTheme();
 
-  const contacts = useLiveQuery(() => db.contacts.toArray(), [], []);
-  const interactions = useLiveQuery(() => db.interactions.toArray(), [], []);
-  const overdueCount = getOverdueContacts(contacts ?? [], interactions ?? []).length;
-
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-border bg-background px-4 md:px-6">
       <div className="flex flex-1 items-center gap-2 rounded-full border border-border bg-surface px-4 py-2 text-muted-foreground max-w-md">
         <Search size={15} />
-        <span className="text-[13px]">Rechercher un contact, une opportunité…</span>
+        <span className="text-[13px]">Rechercher un contrôle, un client…</span>
       </div>
       <div className="flex items-center gap-2">
         <button
@@ -27,14 +20,6 @@ export function Topbar() {
         >
           {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
         </button>
-        <div className="relative flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface text-muted-foreground">
-          <Bell size={16} />
-          {overdueCount > 0 && (
-            <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[10px] font-medium text-white">
-              {overdueCount}
-            </span>
-          )}
-        </div>
         <div className="flex h-9 w-9 items-center justify-center rounded-full bg-ink text-[12px] font-medium text-background">
           JD
         </div>

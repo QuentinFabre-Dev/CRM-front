@@ -1,5 +1,4 @@
 // Validated palette slots from the dataviz skill (references/palette.md).
-// Categorical order is fixed — never reassign or cycle independently.
 export const CATEGORICAL = [
   "#2a78d6", // 1 blue
   "#eb6834", // 2 orange
@@ -11,7 +10,6 @@ export const CATEGORICAL = [
   "#e34948", // 8 red
 ];
 
-// Ordinal blue ramp for ordered stages (funnel-style), safe on light & dark surfaces.
 export const ORDINAL_BLUE = ["#86b6ef", "#6da7ec", "#3987e5", "#2a78d6", "#1c5cab"];
 
 export const STATUS = {
@@ -24,5 +22,4 @@ export const STATUS = {
 export const CHART_INK = {
   secondary: "#898781",
   gridline: "#e1e0d9",
-  gridlineDark: "#2c2c2a",
 };

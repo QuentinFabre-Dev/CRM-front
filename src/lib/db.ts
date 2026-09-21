@@ -1,130 +1,72 @@
 import Dexie, { type Table } from "dexie";
 import type {
-  Contact,
-  Interaction,
-  Opportunity,
-  Setting,
-  Tag,
-  Target,
-  Task,
-  WeeklyChargeability,
+  Assessment,
+  AssessmentControl,
+  Control,
+  CsfCategory,
+  CsfFunction,
+  CsfMapping,
+  CsfSubcategory,
 } from "./types";
 
-export class NexaCrmDatabase extends Dexie {
-  contacts!: Table<Contact, string>;
-  opportunities!: Table<Opportunity, string>;
-  interactions!: Table<Interaction, string>;
-  tasks!: Table<Task, string>;
-  tags!: Table<Tag, string>;
-  weeklyChargeability!: Table<WeeklyChargeability, string>;
-  targets!: Table<Target, string>;
-  settings!: Table<Setting, string>;
+export class ControlStudioDatabase extends Dexie {
+  controls!: Table<Control, string>;
+  csfFunctions!: Table<CsfFunction, string>;
+  csfCategories!: Table<CsfCategory, string>;
+  csfSubcategories!: Table<CsfSubcategory, string>;
+  csfMappings!: Table<CsfMapping, number>;
+  assessments!: Table<Assessment, string>;
+  assessmentControls!: Table<AssessmentControl, string>;
 
   constructor() {
-    super("nexacrm");
+    super("control-studio");
     this.version(1).stores({
-      contacts: "id, name, company, createdAt",
-      opportunities: "id, contactId, stage, outcome, createdAt",
-      interactions: "id, contactId, opportunityId, date, createdAt",
-      tasks: "id, quadrant, done, createdAt",
-      tags: "id, label",
-      weeklyChargeability: "id, weekStart",
-      targets: "id, type",
-      settings: "key",
+      controls: "id, family, baseId, *baselines",
+      csfFunctions: "id",
+      csfCategories: "id, functionId",
+      csfSubcategories: "id, categoryId, functionId",
+      csfMappings: "++id, subcategoryId, controlId",
+      assessments: "id, createdAt",
+      assessmentControls: "id, assessmentId, controlId, [assessmentId+controlId]",
     });
   }
 }
 
-export const db = typeof window !== "undefined" ? new NexaCrmDatabase() : (null as unknown as NexaCrmDatabase);
+export const db =
+  typeof window !== "undefined" ? new ControlStudioDatabase() : (null as unknown as ControlStudioDatabase);
+
+export interface AssessmentExportPayload {
+  version: number;
+  exportedAt: string;
+  assessment: Assessment;
+  assessmentControls: AssessmentControl[];
+}
 
 export const EXPORT_VERSION = 1;
 
-export interface ExportPayload {
-  version: number;
-  exportedAt: string;
-  contacts: Contact[];
-  opportunities: Opportunity[];
-  interactions: Interaction[];
-  tasks: Task[];
-  tags: Tag[];
-  weeklyChargeability: WeeklyChargeability[];
-  targets: Target[];
-  settings: Setting[];
-}
-
-export async function exportDatabase(): Promise<ExportPayload> {
-  const [contacts, opportunities, interactions, tasks, tags, weeklyChargeability, targets, settings] =
-    await Promise.all([
-      db.contacts.toArray(),
-      db.opportunities.toArray(),
-      db.interactions.toArray(),
-      db.tasks.toArray(),
-      db.tags.toArray(),
-      db.weeklyChargeability.toArray(),
-      db.targets.toArray(),
-      db.settings.toArray(),
-    ]);
+export async function exportAssessment(assessmentId: string): Promise<AssessmentExportPayload> {
+  const assessment = await db.assessments.get(assessmentId);
+  if (!assessment) throw new Error("Évaluation introuvable");
+  const assessmentControls = await db.assessmentControls.where("assessmentId").equals(assessmentId).toArray();
   return {
     version: EXPORT_VERSION,
     exportedAt: new Date().toISOString(),
-    contacts,
-    opportunities,
-    interactions,
-    tasks,
-    tags,
-    weeklyChargeability,
-    targets,
-    settings,
+    assessment,
+    assessmentControls,
   };
 }
 
-export async function importDatabase(payload: ExportPayload): Promise<void> {
-  await db.transaction(
-    "rw",
-    [
-      db.contacts,
-      db.opportunities,
-      db.interactions,
-      db.tasks,
-      db.tags,
-      db.weeklyChargeability,
-      db.targets,
-      db.settings,
-    ],
-    async () => {
-      await Promise.all([
-        db.contacts.clear(),
-        db.opportunities.clear(),
-        db.interactions.clear(),
-        db.tasks.clear(),
-        db.tags.clear(),
-        db.weeklyChargeability.clear(),
-        db.targets.clear(),
-        db.settings.clear(),
-      ]);
-      await Promise.all([
-        db.contacts.bulkAdd(payload.contacts ?? []),
-        db.opportunities.bulkAdd(payload.opportunities ?? []),
-        db.interactions.bulkAdd(payload.interactions ?? []),
-        db.tasks.bulkAdd(payload.tasks ?? []),
-        db.tags.bulkAdd(payload.tags ?? []),
-        db.weeklyChargeability.bulkAdd(payload.weeklyChargeability ?? []),
-        db.targets.bulkAdd(payload.targets ?? []),
-        db.settings.bulkAdd(payload.settings ?? []),
-      ]);
-    }
-  );
+export async function importAssessment(payload: AssessmentExportPayload): Promise<void> {
+  await db.transaction("rw", [db.assessments, db.assessmentControls], async () => {
+    await db.assessments.put(payload.assessment);
+    await db.assessmentControls.bulkPut(payload.assessmentControls);
+  });
 }
 
-export async function clearDatabase(): Promise<void> {
-  await Promise.all([
-    db.contacts.clear(),
-    db.opportunities.clear(),
-    db.interactions.clear(),
-    db.tasks.clear(),
-    db.tags.clear(),
-    db.weeklyChargeability.clear(),
-    db.targets.clear(),
-    db.settings.clear(),
-  ]);
+export async function deleteAssessment(assessmentId: string): Promise<void> {
+  await db.transaction("rw", [db.assessments, db.assessmentControls], async () => {
+    await db.assessments.delete(assessmentId);
+    const ids = await db.assessmentControls.where("assessmentId").equals(assessmentId).primaryKeys();
+    await db.assessmentControls.bulkDelete(ids);
+  });
 }

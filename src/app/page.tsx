@@ -1,132 +1,125 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { useLiveQuery } from "dexie-react-hooks";
-import { UserPlus, Briefcase, Euro, Trophy } from "lucide-react";
-import { db } from "@/lib/db";
-import { STAGES, type OpportunityStage } from "@/lib/types";
-import { getPeriodRange, getPreviousPeriodRange, isWithin, percentDelta, type PeriodKey } from "@/lib/period";
-import { getFiscalYearRange, summarizeChargeability } from "@/lib/fiscal-year";
-import { getOverdueContacts } from "@/lib/relances";
-import { formatCurrency } from "@/lib/format";
-import { CATEGORICAL } from "@/lib/chart-colors";
-import { PeriodTabs } from "@/components/dashboard/period-tabs";
-import { StatCard } from "@/components/dashboard/stat-card";
-import { EisenhowerMini } from "@/components/dashboard/eisenhower-mini";
-import { PipelineCompact } from "@/components/dashboard/pipeline-compact";
-import { SourcesBreakdown } from "@/components/dashboard/sources-breakdown";
-import { ChargeabilityWidget } from "@/components/dashboard/chargeability-widget";
-import { RelancesWidget } from "@/components/dashboard/relances-widget";
-import { ActivityFeed } from "@/components/dashboard/activity-feed";
+import { formatDistanceToNow } from "date-fns";
+import { fr } from "date-fns/locale";
+import { Trash2 } from "lucide-react";
+import { db, deleteAssessment } from "@/lib/db";
+import { computeAssessmentStats } from "@/lib/assessment";
+import { BASELINES } from "@/lib/types";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
+import { AssessmentFormDialog } from "@/components/evaluations/assessment-form-dialog";
+import { maturityColor } from "@/lib/maturity";
 
-export default function DashboardPage() {
-  const [period, setPeriod] = useState<PeriodKey>("week");
+export default function HomePage() {
+  const [confirmId, setConfirmId] = useState<string | null>(null);
+  const assessments = useLiveQuery(() => db.assessments.toArray(), [], []);
+  const assessmentControls = useLiveQuery(() => db.assessmentControls.toArray(), [], []);
 
-  const contacts = useLiveQuery(() => db.contacts.toArray(), [], []);
-  const opportunities = useLiveQuery(() => db.opportunities.toArray(), [], []);
-  const interactions = useLiveQuery(() => db.interactions.toArray(), [], []);
-  const weekly = useLiveQuery(() => db.weeklyChargeability.toArray(), [], []);
-  const targets = useLiveQuery(() => db.targets.toArray(), [], []);
+  const statsByAssessment = useMemo(() => {
+    const map = new Map<string, ReturnType<typeof computeAssessmentStats>>();
+    for (const a of assessments ?? []) {
+      map.set(
+        a.id,
+        computeAssessmentStats((assessmentControls ?? []).filter((ac) => ac.assessmentId === a.id))
+      );
+    }
+    return map;
+  }, [assessments, assessmentControls]);
 
-  const range = useMemo(() => getPeriodRange(period), [period]);
-  const prevRange = useMemo(() => getPreviousPeriodRange(period), [period]);
+  const remove = async (id: string) => {
+    await deleteAssessment(id);
+    setConfirmId(null);
+  };
 
-  const newContacts = (contacts ?? []).filter((c) => isWithin(c.createdAt, range)).length;
-  const prevNewContacts = (contacts ?? []).filter((c) => isWithin(c.createdAt, prevRange)).length;
-
-  const newOpps = (opportunities ?? []).filter((o) => isWithin(o.createdAt, range)).length;
-  const prevNewOpps = (opportunities ?? []).filter((o) => isWithin(o.createdAt, prevRange)).length;
-
-  const openOpps = (opportunities ?? []).filter((o) => o.outcome === "open");
-  const pipelineTotal = openOpps.reduce((sum, o) => sum + o.amount, 0);
-  const pipelineAddedInPeriod = openOpps
-    .filter((o) => isWithin(o.createdAt, range))
-    .reduce((sum, o) => sum + o.amount, 0);
-  const pipelineDelta = pipelineTotal > 0 ? Math.round((pipelineAddedInPeriod / pipelineTotal) * 100) : null;
-
-  const wonInPeriod = (opportunities ?? []).filter((o) => o.outcome === "won" && isWithin(o.updatedAt, range)).length;
-  const wonInPrevPeriod = (opportunities ?? []).filter(
-    (o) => o.outcome === "won" && isWithin(o.updatedAt, prevRange)
-  ).length;
-
-  const byStage = (opportunities ?? [])
-    .filter((o) => o.outcome !== "lost")
-    .reduce((acc, o) => {
-      acc[o.stage] = (acc[o.stage] ?? 0) + o.amount;
-      return acc;
-    }, {} as Record<OpportunityStage, number>);
-
-  const sourceCounts = (opportunities ?? []).reduce((acc, o) => {
-    const key = o.source ?? "Autres";
-    acc[key] = (acc[key] ?? 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-
-  const fiscalYear = getFiscalYearRange();
-  const chargeabilitySummary = summarizeChargeability(weekly ?? [], fiscalYear);
-  const chargeabilityTarget = (targets ?? []).find((t) => t.type === "chargeabilite")?.value ?? 80;
-
-  const overdue = getOverdueContacts(contacts ?? [], interactions ?? []);
-
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? "Bonjour" : hour < 18 ? "Bon après-midi" : "Bonsoir";
+  const sorted = [...(assessments ?? [])].sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div className="space-y-5">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-[28px] font-medium tracking-tight">{greeting}</h1>
-          <p className="mt-1 text-[13px] text-muted-foreground">Voici ce qui se passe dans votre CRM.</p>
+          <h1 className="text-[22px] font-medium tracking-tight">Évaluations</h1>
+          <p className="mt-1 text-[13px] text-muted-foreground">
+            {sorted.length} dossier(s) client — NIST SP 800-53 Rev 5 mappé à CSF 2.0
+          </p>
         </div>
-        <PeriodTabs value={period} onChange={setPeriod} />
+        <AssessmentFormDialog />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard
-          icon={UserPlus}
-          label="Nouveaux prospects"
-          value={String(newContacts)}
-          delta={percentDelta(newContacts, prevNewContacts)}
-          tint={CATEGORICAL[0]}
-        />
-        <StatCard
-          icon={Briefcase}
-          label="Nouvelles opportunités"
-          value={String(newOpps)}
-          delta={percentDelta(newOpps, prevNewOpps)}
-          tint={CATEGORICAL[6]}
-        />
-        <StatCard
-          icon={Euro}
-          label="Pipeline"
-          value={formatCurrency(pipelineTotal)}
-          delta={pipelineDelta}
-          deltaLabel="ajoutés sur la période"
-          tint={CATEGORICAL[2]}
-        />
-        <StatCard
-          icon={Trophy}
-          label="Affaires remportées"
-          value={String(wonInPeriod)}
-          delta={percentDelta(wonInPeriod, wonInPrevPeriod)}
-          tint={CATEGORICAL[1]}
-        />
-      </div>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {sorted.map((a) => {
+          const stats = statsByAssessment.get(a.id);
+          const baselineLabel = BASELINES.find((b) => b.id === a.baseline)?.label ?? a.baseline;
+          return (
+            <Card key={a.id} className="relative p-4">
+              <Link href={`/evaluations/${a.id}`} className="block">
+                <div className="flex items-start justify-between gap-2 pr-8">
+                  <p className="truncate text-[14px] font-medium">{a.clientName}</p>
+                  <Badge variant="outline">{baselineLabel}</Badge>
+                </div>
+                <p className="mt-1 text-[11.5px] text-muted-foreground">
+                  {a.assessor ? `${a.assessor} · ` : ""}
+                  créé {formatDistanceToNow(new Date(a.createdAt), { addSuffix: true, locale: fr })}
+                </p>
 
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-        <div className="xl:col-span-2">
-          <EisenhowerMini />
-        </div>
-        <RelancesWidget overdue={overdue} />
-      </div>
+                <div className="mt-4">
+                  <div className="flex items-center justify-between text-[11.5px] text-muted-foreground">
+                    <span>Complétude</span>
+                    <span>
+                      {stats?.scored ?? 0}/{stats?.total ?? 0}
+                    </span>
+                  </div>
+                  <Progress value={stats?.completion ?? 0} className="mt-1" />
+                </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <PipelineCompact byStage={byStage} />
-        <SourcesBreakdown counts={sourceCounts} />
-        <ChargeabilityWidget summary={chargeabilitySummary} target={chargeabilityTarget} fiscalYear={fiscalYear} />
-      </div>
+                <div className="mt-3 flex items-center gap-2">
+                  <span
+                    className="h-2.5 w-2.5 rounded-full"
+                    style={{ backgroundColor: maturityColor(stats?.averageMaturity ?? null) }}
+                  />
+                  <span className="text-[12.5px] font-medium">
+                    {stats?.averageMaturity !== null && stats?.averageMaturity !== undefined
+                      ? `Maturité moyenne ${stats.averageMaturity}/5`
+                      : "Pas encore évalué"}
+                  </span>
+                </div>
+              </Link>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-2 top-2"
+                onClick={() => setConfirmId(a.id)}
+              >
+                <Trash2 size={14} className="text-danger" />
+              </Button>
 
-      <ActivityFeed />
+              {confirmId === a.id && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-md bg-surface/95 p-4 text-center">
+                  <p className="text-[13px]">Supprimer « {a.clientName} » ?</p>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="ghost" onClick={() => setConfirmId(null)}>
+                      Annuler
+                    </Button>
+                    <Button size="sm" variant="danger" onClick={() => remove(a.id)}>
+                      Supprimer
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </Card>
+          );
+        })}
+        {sorted.length === 0 && (
+          <p className="col-span-full text-[13px] text-muted-foreground">
+            Aucune évaluation pour le moment — créez-en une pour commencer.
+          </p>
+        )}
+      </div>
     </div>
   );
 }

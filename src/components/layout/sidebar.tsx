@@ -2,25 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Home,
-  Users,
-  Briefcase,
-  Grid2x2,
-  Clock,
-  Target,
-  Settings,
-  ShieldCheck,
-} from "lucide-react";
+import { Home, Library, Settings, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
-  { href: "/", label: "Accueil", icon: Home },
-  { href: "/taches", label: "Tâches", icon: Grid2x2 },
-  { href: "/contacts", label: "Contacts", icon: Users },
-  { href: "/opportunites", label: "Opportunités", icon: Briefcase },
-  { href: "/chargeabilite", label: "Chargeabilité", icon: Clock },
-  { href: "/objectifs", label: "Objectifs", icon: Target },
+  { href: "/", label: "Évaluations", icon: Home },
+  { href: "/referentiel", label: "Référentiel", icon: Library },
   { href: "/parametres", label: "Paramètres", icon: Settings },
 ];
 
@@ -33,11 +20,11 @@ export function Sidebar() {
         <div className="flex h-7 w-7 items-center justify-center rounded-sm bg-ink text-background">
           <ShieldCheck size={15} />
         </div>
-        <span className="text-[15px] font-medium tracking-tight">NexaCRM</span>
+        <span className="text-[15px] font-medium tracking-tight">Control Studio</span>
       </div>
       <nav className="flex-1 space-y-0.5 px-3 py-2">
         {NAV_ITEMS.map((item) => {
-          const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+          const active = item.href === "/" ? pathname === "/" || pathname.startsWith("/evaluations") : pathname.startsWith(item.href);
           const Icon = item.icon;
           return (
             <Link
@@ -45,9 +32,7 @@ export function Sidebar() {
               href={item.href}
               className={cn(
                 "flex items-center gap-3 rounded-full px-3.5 py-2 text-[13px] font-medium transition-colors",
-                active
-                  ? "bg-accent-wash text-accent"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                active ? "bg-accent-wash text-accent" : "text-muted-foreground hover:bg-muted hover:text-foreground"
               )}
             >
               <Icon size={16} strokeWidth={active ? 2.2 : 1.8} />
@@ -58,6 +43,8 @@ export function Sidebar() {
       </nav>
       <div className="border-t border-border p-4 text-[11px] leading-relaxed text-muted-foreground">
         Données 100% locales — rien n&apos;est envoyé à un serveur.
+        <br />
+        Référentiel : NIST SP 800-53 Rev 5 · CSF 2.0
       </div>
     </aside>
   );

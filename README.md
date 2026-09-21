@@ -1,43 +1,62 @@
-# NexaCRM
+# Control Studio
 
-Mini CRM interne, local-first : opportunités commerciales, carnet de contacts avec
-relances, matrice d'Eisenhower et suivi de chargeabilité.
+Plateforme interne d'évaluation de maturité cybersécurité, basée sur **NIST SP
+800-53 Rev 5** (avec les objectifs d'évaluation **SP 800-53A**), filtrée par
+**baseline SP 800-53B** (Low / Moderate / High / Privacy), et mappée au
+**NIST Cybersecurity Framework 2.0** via le crosswalk officiel NIST OLIR.
+
+Remplace un suivi Excel : pour chaque mission client, l'application duplique le
+sous-ensemble de contrôles de la baseline choisie, permet de vérifier chaque
+objectif d'évaluation, de noter une maturité (échelle 0-5) par contrôle avec
+preuves et notes, puis visualise l'ensemble agrégé par fonction/catégorie/
+sous-catégorie CSF 2.0.
 
 ## Principe : zéro donnée hébergée
 
-L'application peut être déployée en ligne (Vercel ou équivalent) pour être
-accessible depuis une URL, mais **aucune donnée métier ne transite ni n'est
-stockée côté serveur**. Contacts, opportunités, tâches, interactions et
-saisies de chargeabilité vivent uniquement dans le navigateur (IndexedDB, via
-[Dexie](https://dexie.org)). Aucune base de données, aucune API applicative.
+Comme pour les autres outils internes de ce dépôt, **aucune donnée d'évaluation
+client ne transite ni n'est stockée côté serveur**. Tout vit dans le navigateur
+(IndexedDB via [Dexie](https://dexie.org)). Chaque évaluation s'exporte/importe
+en JSON depuis l'onglet Synthèse ou les Paramètres — c'est le mécanisme de
+sauvegarde et de transfert entre appareils.
 
-- Usage mono-appareil : les données restent dans le navigateur qui les a créées.
-- Sauvegarde/transfert : export et import JSON complets depuis **Paramètres**.
-- Au premier lancement sans données, un jeu de données de démonstration est
-  généré automatiquement (voir `src/lib/seed.ts`).
+Le référentiel NIST (catalogue de contrôles, baselines, CSF 2.0 et son
+crosswalk) est **embarqué en local** (`public/data/*.json`), généré une fois via
+`scripts/fetch-nist-data.mjs` à partir des sources officielles NIST. L'application
+ne fait **aucun appel réseau à NIST au runtime**.
 
-## Stack
+## Sources de données
 
-- [Next.js 14](https://nextjs.org) (App Router) + TypeScript
-- Tailwind CSS + composants Radix (style inspiré d'Apple HIG)
-- [Dexie](https://dexie.org) / IndexedDB pour le stockage local
-- Recharts pour les graphiques, Framer Motion pour les animations
+- Catalogue **SP 800-53 Rev 5** (objectifs d'évaluation 800-53A déjà intégrés) :
+  [`usnistgov/oscal-content`](https://github.com/usnistgov/oscal-content) (OSCAL JSON, NIST officiel)
+- Baselines **SP 800-53B** (Low/Moderate/High/Privacy), même dépôt, catalogues résolus
+- **NIST CSF 2.0** Core + crosswalk officiel vers SP 800-53 Rev 5 (NIST OLIR) :
+  API publique du NIST CSF Reference Tool (`csrc.nist.gov`)
+
+Pour régénérer le référentiel embarqué (mise à jour NIST, nouvelle version) :
+
+```bash
+node scripts/fetch-nist-data.mjs
+```
 
 ## Fonctionnalités
 
-- **Accueil** — KPI, pipeline par étape, sources de prospects, chargeabilité,
-  relances en retard, tâches du jour, activité récente.
-- **Contacts** — fiche détaillée avec fil chronologique d'interactions
-  (appels, emails, lunchs, notes, réunions) et badge de relance après 60
-  jours sans contact.
-- **Opportunités** — vue Kanban par étape, liée aux contacts.
-- **Tâches** — matrice d'Eisenhower en glisser-déposer ; un clic maintenu sur
-  une tâche ouvre une roue radiale pour lui poser un tag libre.
-- **Chargeabilité** — saisie hebdomadaire, cumul sur l'année fiscale
-  (1 oct → 30 sept) et suivi de l'objectif (80% par défaut).
-- **Objectifs** — normes personnelles (chargeabilité, vente, autres),
-  librement extensibles.
-- **Paramètres** — gestion des tags, export/import JSON, remise à zéro.
+- **Évaluations** — liste des dossiers clients (baseline, complétude, maturité
+  moyenne), création d'une nouvelle évaluation (duplique les contrôles de la
+  baseline choisie).
+- **Contrôles** — liste filtrable (famille, statut) avec panneau de détail :
+  exigence (texte officiel, paramètres organisationnels mis en évidence),
+  discussion, checklist des objectifs d'évaluation 800-53A, méthodes
+  d'évaluation (EXAMINE/INTERVIEW/TEST), notation de maturité 0-5, preuves et
+  notes.
+- **CSF 2.0** — arbre Functions → Categories → Subcategories, coloré par
+  maturité moyenne des contrôles mappés (crosswalk officiel), navigation vers
+  les contrôles sources.
+- **Synthèse** — indicateurs clés, graphiques de maturité par famille SP 800-53
+  et par fonction CSF 2.0, export JSON du dossier complet.
+- **Référentiel** — consultation libre du catalogue complet et de CSF 2.0, hors
+  contexte d'évaluation.
+- **Paramètres** — import d'évaluation JSON, informations sur le référentiel
+  embarqué, remise à zéro.
 
 ## Développement
 
@@ -46,7 +65,7 @@ npm install
 npm run dev
 ```
 
-L'application est disponible sur http://localhost:3000.
+Disponible sur http://localhost:3000.
 
 ```bash
 npm run build   # build de production
