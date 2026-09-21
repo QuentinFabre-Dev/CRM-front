@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import { useLiveQuery } from "dexie-react-hooks";
 import { ArrowLeft } from "lucide-react";
@@ -9,8 +9,7 @@ import { computeAssessmentStats } from "@/lib/assessment";
 import { BASELINES } from "@/lib/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { ControlsList } from "@/components/evaluations/controls-list";
-import { ControlDetailPanel } from "@/components/evaluations/control-detail-panel";
+import { ControlsTable } from "@/components/evaluations/controls-table";
 import { CsfTab } from "@/components/evaluations/csf-tab";
 import { SummaryTab } from "@/components/evaluations/summary-tab";
 
@@ -22,13 +21,15 @@ export default function AssessmentPage({ params }: { params: { id: string } }) {
     [assessmentId],
     []
   );
-  const [selectedControlId, setSelectedControlId] = useState<string | null>(null);
+  const [focusControlId, setFocusControlId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("controles");
 
   const jumpToControl = (controlId: string) => {
-    setSelectedControlId(controlId);
+    setFocusControlId(controlId);
     setActiveTab("controles");
   };
+
+  const clearFocus = useCallback(() => setFocusControlId(null), []);
 
   const stats = useMemo(() => computeAssessmentStats(assessmentControls ?? []), [assessmentControls]);
 
@@ -71,22 +72,11 @@ export default function AssessmentPage({ params }: { params: { id: string } }) {
         </TabsList>
 
         <TabsContent value="controles" className="flex-1 overflow-hidden">
-          <div className="grid h-full grid-cols-1 gap-4 lg:grid-cols-[320px_1fr]">
-            <div className="overflow-hidden rounded-md border border-border bg-surface">
-              <ControlsList
-                assessmentId={assessmentId}
-                selectedControlId={selectedControlId}
-                onSelect={setSelectedControlId}
-              />
-            </div>
-            <div className="overflow-y-auto rounded-md border border-border bg-surface p-5">
-              {selectedControlId ? (
-                <ControlDetailPanel assessmentId={assessmentId} controlId={selectedControlId} />
-              ) : (
-                <p className="text-[13px] text-muted-foreground">Sélectionnez un contrôle dans la liste.</p>
-              )}
-            </div>
-          </div>
+          <ControlsTable
+            assessmentId={assessmentId}
+            focusControlId={focusControlId}
+            onFocusHandled={clearFocus}
+          />
         </TabsContent>
 
         <TabsContent value="csf" className="flex-1 overflow-y-auto">
