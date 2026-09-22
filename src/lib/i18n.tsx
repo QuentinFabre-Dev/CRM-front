@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import type { AssessmentMethod, AssessmentObjective, Control, CsfCategory, CsfFunction, CsfSubcategory, StatementPart } from "./types";
+import type { AssessmentMethod, AssessmentObjective, CisControl, CisSafeguard, Control, CsfCategory, CsfFunction, CsfSubcategory, StatementPart } from "./types";
 
 export type Lang = "fr" | "en";
 
@@ -96,4 +96,17 @@ export function csfSubcategoryText(s: CsfSubcategory, lang: Lang): string {
 export function csfSubcategoryExamples(s: CsfSubcategory, lang: Lang): string[] {
   if (lang === "fr" && s.examplesFr?.length) return s.examplesFr;
   return s.examples ?? [];
+}
+
+export function cisControlTitle(c: CisControl, lang: Lang): string {
+  return lang === "fr" ? c.titleFr || c.title : c.title;
+}
+export function cisControlDescription(c: CisControl, lang: Lang): string {
+  return lang === "fr" ? c.descriptionFr || c.description : c.description;
+}
+export function cisSafeguardTitle(s: CisSafeguard, lang: Lang): string {
+  return lang === "fr" ? s.titleFr || s.title : s.title;
+}
+export function cisSafeguardDescription(s: CisSafeguard, lang: Lang): string {
+  return lang === "fr" ? s.descriptionFr || s.description : s.description;
 }

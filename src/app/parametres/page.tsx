@@ -15,6 +15,8 @@ export default function ParametresPage() {
   const controlCount = useLiveQuery(() => db.controls.count(), [], 0);
   const subcategoryCount = useLiveQuery(() => db.csfSubcategories.count(), [], 0);
   const mappingCount = useLiveQuery(() => db.csfMappings.count(), [], 0);
+  const cisSafeguardCount = useLiveQuery(() => db.cisSafeguards.count(), [], 0);
+  const cisMappingCount = useLiveQuery(() => db.cisMappings.count(), [], 0);
   const assessmentCount = useLiveQuery(() => db.assessments.count(), [], 0);
 
   const handleImportClick = () => fileInputRef.current?.click();
@@ -68,7 +70,7 @@ export default function ParametresPage() {
         <CardHeader>
           <CardTitle>Référentiel embarqué</CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-2 gap-3 text-[13px] sm:grid-cols-4">
+        <CardContent className="grid grid-cols-2 gap-3 text-[13px] sm:grid-cols-3">
           <div>
             <p className="text-[11px] text-muted-foreground">Contrôles SP 800-53</p>
             <p className="text-[18px] font-medium">{controlCount}</p>
@@ -82,13 +84,22 @@ export default function ParametresPage() {
             <p className="text-[18px] font-medium">{mappingCount}</p>
           </div>
           <div>
+            <p className="text-[11px] text-muted-foreground">Safeguards CIS v8.1</p>
+            <p className="text-[18px] font-medium">{cisSafeguardCount}</p>
+          </div>
+          <div>
+            <p className="text-[11px] text-muted-foreground">Mappings CIS ↔ 800-53</p>
+            <p className="text-[18px] font-medium">{cisMappingCount}</p>
+          </div>
+          <div>
             <p className="text-[11px] text-muted-foreground">Évaluations</p>
             <p className="text-[18px] font-medium">{assessmentCount}</p>
           </div>
         </CardContent>
         <CardContent className="pt-0 text-[12px] text-muted-foreground">
-          Catalogue NIST SP 800-53 Rev 5 (avec objectifs d&apos;évaluation 800-53A), baselines SP 800-53B, et
-          crosswalk officiel NIST OLIR vers CSF 2.0 — embarqués dans l&apos;application, aucun appel réseau au runtime.
+          Catalogue NIST SP 800-53 Rev 5 (avec objectifs d&apos;évaluation 800-53A), baselines SP 800-53B,
+          crosswalk officiel NIST OLIR vers CSF 2.0 et crosswalk officiel CIS vers les Controls v8.1 —
+          embarqués dans l&apos;application, aucun appel réseau au runtime.
         </CardContent>
       </Card>
 

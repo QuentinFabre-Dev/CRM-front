@@ -11,7 +11,14 @@ import { Textarea } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { StatementView } from "@/components/evaluations/statement-view";
 import { BASELINES, type AssessmentControl, type Control } from "@/lib/types";
-import { useLang, controlStatement, controlDiscussion, controlObjectives, controlMethods } from "@/lib/i18n";
+import {
+  useLang,
+  controlStatement,
+  controlDiscussion,
+  controlObjectives,
+  controlMethods,
+  cisSafeguardTitle,
+} from "@/lib/i18n";
 
 export function ControlExpandedDetail({ control, ac }: { control: Control; ac: AssessmentControl }) {
   const { lang } = useLang();
@@ -53,6 +60,15 @@ export function ControlExpandedDetail({ control, ac }: { control: Control; ac: A
   );
   const coverage = coverageFor(applicable, ac.assetChecks);
 
+  const cisSafeguards = useLiveQuery(async () => {
+    const mapped = await db.cisMappings.where("controlId").equals(control.id).toArray();
+    if (mapped.length === 0) return [];
+    const found = await db.cisSafeguards.bulkGet(mapped.map((m) => m.safeguardId));
+    return found
+      .filter((sg): sg is NonNullable<typeof sg> => Boolean(sg))
+      .sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }));
+  }, [control.id], []);
+
   return (
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
       <div className="space-y-4">
@@ -87,6 +103,27 @@ export function ControlExpandedDetail({ control, ac }: { control: Control; ac: A
                     {m.method}
                   </Badge>
                   <p className="whitespace-pre-line text-muted-foreground">{m.objects}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {(cisSafeguards ?? []).length > 0 && (
+          <section>
+            <h4 className="mb-1.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+              Safeguards CIS v8.1 correspondants
+            </h4>
+            <div className="space-y-1">
+              {(cisSafeguards ?? []).map((sg) => (
+                <div key={sg.id} className="flex items-start gap-2 rounded-sm border border-border p-2">
+                  <Badge variant="outline" className="shrink-0">
+                    {sg.id}
+                  </Badge>
+                  <span className="text-[11.5px] leading-snug">{cisSafeguardTitle(sg, lang)}</span>
+                  <span className="ml-auto shrink-0 rounded-full border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                    IG{sg.ig}
+                  </span>
                 </div>
               ))}
             </div>

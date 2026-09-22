@@ -3,6 +3,9 @@ import type {
   Assessment,
   AssessmentControl,
   AssetGroup,
+  CisControl,
+  CisMapping,
+  CisSafeguard,
   Control,
   ControlAssetGroup,
   ControlTemplate,
@@ -18,6 +21,9 @@ export class ControlStudioDatabase extends Dexie {
   csfCategories!: Table<CsfCategory, string>;
   csfSubcategories!: Table<CsfSubcategory, string>;
   csfMappings!: Table<CsfMapping, number>;
+  cisControls!: Table<CisControl, number>;
+  cisSafeguards!: Table<CisSafeguard, string>;
+  cisMappings!: Table<CisMapping, number>;
   assessments!: Table<Assessment, string>;
   assessmentControls!: Table<AssessmentControl, string>;
   controlTemplates!: Table<ControlTemplate, string>;
@@ -49,6 +55,11 @@ export class ControlStudioDatabase extends Dexie {
     this.version(4).stores({
       assets: null,
       assetGroupMembers: null,
+    });
+    this.version(5).stores({
+      cisControls: "number",
+      cisSafeguards: "id, controlNumber, ig",
+      cisMappings: "++id, safeguardId, controlId",
     });
   }
 }

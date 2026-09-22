@@ -10,6 +10,7 @@ import { BASELINES } from "@/lib/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { AssetsTab } from "@/components/evaluations/assets-tab";
+import { CisTab } from "@/components/evaluations/cis-tab";
 import { ControlsTable } from "@/components/evaluations/controls-table";
 import { CsfTab } from "@/components/evaluations/csf-tab";
 import { SummaryTab } from "@/components/evaluations/summary-tab";
@@ -72,6 +73,7 @@ export default function AssessmentPage({ params }: { params: { id: string } }) {
           <TabsTrigger value="controles">Contrôles</TabsTrigger>
           <TabsTrigger value="actifs">Actifs</TabsTrigger>
           <TabsTrigger value="csf">CSF 2.0</TabsTrigger>
+          <TabsTrigger value="cis">CIS v8.1</TabsTrigger>
           <TabsTrigger value="synthese">Synthèse</TabsTrigger>
         </TabsList>
 
@@ -89,6 +91,10 @@ export default function AssessmentPage({ params }: { params: { id: string } }) {
 
         <TabsContent value="csf" className="flex-1 overflow-y-auto">
           <CsfTab assessmentId={assessmentId} onJumpToControl={jumpToControl} />
+        </TabsContent>
+
+        <TabsContent value="cis" className="flex-1 overflow-y-auto">
+          <CisTab assessmentId={assessmentId} onJumpToControl={jumpToControl} />
         </TabsContent>
 
         <TabsContent value="synthese" className="flex-1 overflow-y-auto">

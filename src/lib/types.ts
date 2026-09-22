@@ -108,6 +108,47 @@ export interface CsfMapping {
   controlId: string;
 }
 
+/**
+ * Implementation Group CIS : palier de sécurité selon la taille et la maturité
+ * de l'organisation. Les paliers sont **cumulatifs** — un IG2 applique aussi
+ * tout l'IG1 — donc le champ `ig` d'un safeguard est son palier *minimum*, et
+ * filtrer sur IG2 signifie « ig <= 2 », jamais « ig === 2 ».
+ */
+export type CisImplementationGroup = 1 | 2 | 3;
+
+export const CIS_IMPLEMENTATION_GROUPS: { id: CisImplementationGroup; label: string; description: string }[] = [
+  { id: 1, label: "IG1", description: "Hygiène cyber essentielle — socle minimal pour toute organisation." },
+  { id: 2, label: "IG2", description: "Organisations gérant des données sensibles pour plusieurs métiers." },
+  { id: 3, label: "IG3", description: "Organisations exposées, soumises à des exigences réglementaires fortes." },
+];
+
+export interface CisControl {
+  number: number;
+  title: string;
+  titleFr?: string;
+  description: string;
+  descriptionFr?: string;
+}
+
+export interface CisSafeguard {
+  /** Numérotation officielle CIS, ex. « 8.3 ». */
+  id: string;
+  controlNumber: number;
+  title: string;
+  titleFr?: string;
+  description: string;
+  descriptionFr?: string;
+  /** Palier minimum auquel ce safeguard s'applique (cumulatif, cf. CisImplementationGroup). */
+  ig: CisImplementationGroup;
+  assetType: string;
+}
+
+export interface CisMapping {
+  id?: number;
+  safeguardId: string;
+  controlId: string;
+}
+
 export type AssessmentStatus = "in-progress" | "complete";
 
 export interface Assessment {

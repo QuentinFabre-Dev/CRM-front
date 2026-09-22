@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StatementView } from "@/components/evaluations/statement-view";
 import { TemplatesBrowser } from "@/components/templates/templates-browser";
 import { cn } from "@/lib/utils";
-import { useLang, controlTitle, controlFamilyTitle, controlStatement, controlDiscussion, csfFunctionTitle, csfFunctionText, csfCategoryTitle, csfSubcategoryText, csfSubcategoryExamples } from "@/lib/i18n";
+import { useLang, controlTitle, controlFamilyTitle, controlStatement, controlDiscussion, csfFunctionTitle, csfFunctionText, csfCategoryTitle, csfSubcategoryText, csfSubcategoryExamples, cisControlTitle, cisControlDescription, cisSafeguardTitle, cisSafeguardDescription } from "@/lib/i18n";
 import { ExamplesHover } from "@/components/ui/examples-hover";
 
 export default function ReferentielPage() {
@@ -21,13 +21,15 @@ export default function ReferentielPage() {
       <div>
         <h1 className="text-[22px] font-medium tracking-tight">Référentiel</h1>
         <p className="mt-1 text-[13px] text-muted-foreground">
-          Consultation libre du catalogue NIST SP 800-53 Rev 5 et de NIST CSF 2.0, hors contexte d&apos;évaluation.
+          Consultation libre du catalogue NIST SP 800-53 Rev 5, de NIST CSF 2.0 et des CIS Controls v8.1,
+          hors contexte d&apos;évaluation.
         </p>
       </div>
       <Tabs defaultValue="controls">
         <TabsList>
           <TabsTrigger value="controls">SP 800-53</TabsTrigger>
           <TabsTrigger value="csf">CSF 2.0</TabsTrigger>
+          <TabsTrigger value="cis">CIS v8.1</TabsTrigger>
           <TabsTrigger value="templates">Modèles</TabsTrigger>
         </TabsList>
         <TabsContent value="controls">
@@ -35,6 +37,9 @@ export default function ReferentielPage() {
         </TabsContent>
         <TabsContent value="csf">
           <CsfBrowser />
+        </TabsContent>
+        <TabsContent value="cis">
+          <CisBrowser />
         </TabsContent>
         <TabsContent value="templates">
           <TemplatesBrowser />
@@ -134,6 +139,77 @@ function ControlsBrowser() {
           <p className="text-[13px] text-muted-foreground">Sélectionnez un contrôle dans la liste.</p>
         )}
       </div>
+    </div>
+  );
+}
+
+function CisBrowser() {
+  const { lang } = useLang();
+  const cisControls = useLiveQuery(() => db.cisControls.toArray(), [], []);
+  const safeguards = useLiveQuery(() => db.cisSafeguards.toArray(), [], []);
+  const mappings = useLiveQuery(() => db.cisMappings.toArray(), [], []);
+  const controls = useLiveQuery(() => db.controls.toArray(), [], []);
+  const controlById = useMemo(() => new Map((controls ?? []).map((c) => [c.id, c])), [controls]);
+
+  const mappedBySafeguard = useMemo(() => {
+    const by = new Map<string, string[]>();
+    for (const m of mappings ?? []) {
+      if (!by.has(m.safeguardId)) by.set(m.safeguardId, []);
+      by.get(m.safeguardId)!.push(m.controlId);
+    }
+    return by;
+  }, [mappings]);
+
+  return (
+    <div className="mt-3 space-y-3">
+      <p className="text-[12px] text-muted-foreground">
+        CIS Critical Security Controls v8.1 et leur correspondance officielle vers NIST SP 800-53 Rev 5,
+        publiée par le CIS. Le palier (IG1/IG2/IG3) est cumulatif : un IG2 applique aussi tout l&apos;IG1.
+      </p>
+      {(cisControls ?? []).map((ctrl) => (
+        <div key={ctrl.number} className="rounded-md border border-border bg-surface p-4">
+          <h3 className="text-[13px] font-medium">
+            {ctrl.number}. {cisControlTitle(ctrl, lang)}
+          </h3>
+          <p className="mt-0.5 text-[12px] text-muted-foreground">{cisControlDescription(ctrl, lang)}</p>
+          <div className="mt-3 space-y-1.5">
+            {(safeguards ?? [])
+              .filter((sg) => sg.controlNumber === ctrl.number)
+              .sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }))
+              .map((sg) => {
+                const mapped = mappedBySafeguard.get(sg.id) ?? [];
+                return (
+                  <div key={sg.id} className="rounded-sm bg-surface-2 p-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="text-[11.5px]">
+                        <span className="font-medium">{sg.id}</span> — {cisSafeguardTitle(sg, lang)}
+                      </p>
+                      <div className="flex shrink-0 items-center gap-1">
+                        <Badge variant="outline">{sg.assetType}</Badge>
+                        <Badge variant="outline">IG{sg.ig}</Badge>
+                      </div>
+                    </div>
+                    <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground">
+                      {cisSafeguardDescription(sg, lang)}
+                    </p>
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      {mapped.map((controlId) => (
+                        <Badge key={controlId} variant="outline">
+                          {controlById.get(controlId)?.label ?? controlId}
+                        </Badge>
+                      ))}
+                      {mapped.length === 0 && (
+                        <span className="text-[10.5px] text-muted-foreground">
+                          Aucun contrôle 800-53 mappé par le CIS.
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
