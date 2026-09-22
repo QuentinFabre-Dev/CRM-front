@@ -6,7 +6,8 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import { db } from "@/lib/db";
 import { maturityColor, maturityLabel, average } from "@/lib/maturity";
 import { cn } from "@/lib/utils";
-import { useLang, csfFunctionTitle, csfCategoryTitle, csfSubcategoryText } from "@/lib/i18n";
+import { useLang, csfFunctionTitle, csfCategoryTitle, csfSubcategoryText, csfSubcategoryExamples } from "@/lib/i18n";
+import { ExamplesHover } from "@/components/ui/examples-hover";
 import { sortByCsfFunctionOrder } from "@/lib/types";
 
 export function CsfTab({
@@ -121,8 +122,16 @@ export function CsfTab({
                             return (
                               <div key={sub.id} className="rounded-sm bg-surface-2 p-2">
                                 <div className="flex items-start justify-between gap-2">
-                                  <p className="text-[11.5px] font-medium">
-                                    {sub.id} <span className="font-normal text-muted-foreground">— {csfSubcategoryText(sub, lang)}</span>
+                                  <p className="flex items-start gap-1.5 text-[11.5px] font-medium">
+                                    <span>
+                                      {sub.id}{" "}
+                                      <span className="font-normal text-muted-foreground">
+                                        — {csfSubcategoryText(sub, lang)}
+                                      </span>
+                                    </span>
+                                    <span className="mt-0.5">
+                                      <ExamplesHover examples={csfSubcategoryExamples(sub, lang)} />
+                                    </span>
                                   </p>
                                   <span
                                     className={cn(

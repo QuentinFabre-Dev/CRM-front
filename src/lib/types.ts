@@ -83,6 +83,9 @@ export interface CsfSubcategory {
   functionId: string;
   text: string;
   textFr?: string;
+  /** Implementation Examples officiels NIST : actions concrètes illustrant la sous-catégorie. */
+  examples?: string[];
+  examplesFr?: string[];
 }
 
 export interface CsfMapping {

@@ -88,3 +88,7 @@ export function csfCategoryTitle(c: CsfCategory, lang: Lang): string {
 export function csfSubcategoryText(s: CsfSubcategory, lang: Lang): string {
   return lang === "fr" ? s.textFr || s.text : s.text;
 }
+export function csfSubcategoryExamples(s: CsfSubcategory, lang: Lang): string[] {
+  if (lang === "fr" && s.examplesFr?.length) return s.examplesFr;
+  return s.examples ?? [];
+}
