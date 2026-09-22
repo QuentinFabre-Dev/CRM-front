@@ -64,7 +64,12 @@ export function controlDiscussion(c: Control, lang: Lang): string {
 
 export function controlObjectives(c: Control, lang: Lang): AssessmentObjective[] {
   if (lang === "fr" && c.assessmentObjectivesFr) {
-    return c.assessmentObjectivesFr.map((o) => ({ id: o.id, label: o.label, text: o.textFr || o.text }));
+    return c.assessmentObjectivesFr.map((o) => ({
+      id: o.id,
+      label: o.label,
+      text: o.textFr || o.text,
+      riskCriticality: o.riskCriticality,
+    }));
   }
   return c.assessmentObjectives;
 }

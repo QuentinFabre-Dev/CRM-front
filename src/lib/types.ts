@@ -28,10 +28,24 @@ export interface StatementPart {
   parts?: StatementPart[];
 }
 
+export type RiskCriticality = "high" | "medium" | "low";
+
+export const RISK_CRITICALITY_LABELS: Record<RiskCriticality, string> = {
+  high: "Critique",
+  medium: "Important",
+  low: "Complémentaire",
+};
+
 export interface AssessmentObjective {
   id: string;
   label: string;
   text: string;
+  /**
+   * Estimation heuristique (non officielle NIST) de la réduction de risque
+   * réelle apportée par cet objectif s'il est satisfait — pour prioriser la
+   * remédiation. Absent sur les référentiels générés avant son introduction.
+   */
+  riskCriticality?: RiskCriticality;
 }
 
 export interface AssessmentMethod {
