@@ -1,6 +1,12 @@
 import { db } from "./db";
 import { DEFAULT_ASSET_GROUPS, defaultGroupKeysForFamily } from "./asset-mapping";
-import { uid, type AssetGroup, type ControlAssetGroup } from "./types";
+import {
+  uid,
+  type AssessmentControl,
+  type AssetGroup,
+  type ControlAssetGroup,
+  type DeploymentLevel,
+} from "./types";
 
 export async function createAssetGroup(
   assessmentId: string,
@@ -132,4 +138,102 @@ export function coverageFor(
     covered: applicable.filter((g) => assetChecks?.[g.id]).length,
     total: applicable.length,
   };
+}
+
+export async function setControlGroupApplicable(
+  assessmentId: string,
+  controlId: string,
+  groupId: string,
+  applicable: boolean
+): Promise<void> {
+  await db.transaction("rw", [db.controlAssetGroups], async () => {
+    const existing = await db.controlAssetGroups
+      .where("[assessmentId+controlId]")
+      .equals([assessmentId, controlId])
+      .filter((m) => m.groupId === groupId)
+      .primaryKeys();
+    if (applicable && existing.length === 0) {
+      await db.controlAssetGroups.add({ id: uid(), assessmentId, controlId, groupId });
+    } else if (!applicable && existing.length > 0) {
+      await db.controlAssetGroups.bulkDelete(existing);
+    }
+  });
+}
+
+/**
+ * Écrit des cellules de la matrice. La ligne est relue dans la transaction :
+ * partir de l'objet affiché ferait perdre un clic sur deux en saisie rapide,
+ * le rendu suivant n'ayant pas encore reçu l'écriture précédente.
+ */
+export async function setObjectiveAssetLevels(
+  assessmentControlId: string,
+  cells: { objectiveId: string; groupId: string }[],
+  level: DeploymentLevel | null
+): Promise<void> {
+  await db.transaction("rw", [db.assessmentControls], async () => {
+    const current = await db.assessmentControls.get(assessmentControlId);
+    if (!current) return;
+    const levels: Record<string, Record<string, DeploymentLevel>> = {};
+    for (const [objectiveId, byGroup] of Object.entries(current.objectiveAssetLevels ?? {})) {
+      levels[objectiveId] = { ...byGroup };
+    }
+    for (const { objectiveId, groupId } of cells) {
+      if (level === null) {
+        delete levels[objectiveId]?.[groupId];
+        if (levels[objectiveId] && Object.keys(levels[objectiveId]).length === 0) delete levels[objectiveId];
+      } else {
+        levels[objectiveId] = { ...(levels[objectiveId] ?? {}), [groupId]: level };
+      }
+    }
+    await db.assessmentControls.update(assessmentControlId, {
+      objectiveAssetLevels: levels,
+      updatedAt: new Date().toISOString(),
+    });
+  });
+}
+
+export interface GroupDeploymentSummary {
+  full: number;
+  partial: number;
+  none: number;
+  na: number;
+  unset: number;
+  total: number;
+}
+
+export function groupDeploymentSummary(
+  ac: AssessmentControl,
+  objectiveIds: string[],
+  groupId: string
+): GroupDeploymentSummary {
+  const summary: GroupDeploymentSummary = { full: 0, partial: 0, none: 0, na: 0, unset: 0, total: objectiveIds.length };
+  for (const objectiveId of objectiveIds) {
+    const level = ac.objectiveAssetLevels?.[objectiveId]?.[groupId];
+    if (level) summary[level]++;
+    else summary.unset++;
+  }
+  return summary;
+}
+
+/**
+ * Couverture effective par groupe. Dès que la matrice a une saisie pour un
+ * groupe, elle fait foi : le groupe est couvert seulement si chaque objectif y
+ * est totalement déployé ou non applicable. Sinon on garde la case cochée à la
+ * main, pour les évaluations qui n'entrent pas dans ce niveau de détail.
+ */
+export function effectiveAssetChecks(ac: AssessmentControl, objectiveIds: string[]): Record<string, boolean> {
+  const result: Record<string, boolean> = { ...(ac.assetChecks ?? {}) };
+  const groupsWithMatrix = new Set<string>();
+  for (const objectiveId of objectiveIds) {
+    for (const groupId of Object.keys(ac.objectiveAssetLevels?.[objectiveId] ?? {})) groupsWithMatrix.add(groupId);
+  }
+  for (const groupId of groupsWithMatrix) {
+    const s = groupDeploymentSummary(ac, objectiveIds, groupId);
+    result[groupId] = s.unset === 0 && s.partial === 0 && s.none === 0;
+  }
+  return result;
+}
+
+export function groupHasMatrixData(ac: AssessmentControl, objectiveIds: string[], groupId: string): boolean {
+  return objectiveIds.some((objectiveId) => Boolean(ac.objectiveAssetLevels?.[objectiveId]?.[groupId]));
 }

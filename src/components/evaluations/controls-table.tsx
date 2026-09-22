@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { Boxes, ChevronDown, ChevronRight, Search } from "lucide-react";
+import { Boxes, ChevronDown, ChevronRight, ExternalLink, Search } from "lucide-react";
 import { db } from "@/lib/db";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -12,7 +12,8 @@ import { MATURITY_LEVELS, RISK_CRITICALITY_LABELS, type AssessmentControl, type 
 import { ControlExpandedDetail } from "@/components/evaluations/control-expanded-detail";
 import { cn } from "@/lib/utils";
 import { useLang, controlTitle, controlFamilyTitle } from "@/lib/i18n";
-import { applicableGroups, coverageFor } from "@/lib/assets";
+import { applicableGroups, coverageFor, effectiveAssetChecks } from "@/lib/assets";
+import { controlWorkspaceHref } from "@/lib/routes";
 
 const COLUMNS = "26px 104px minmax(160px,1fr) 108px 152px minmax(180px,320px)";
 
@@ -206,7 +207,10 @@ export function ControlsTable({
               else rowRefs.current.delete(control.id);
             }}
             lang={lang}
-            coverage={coverageFor(applicableGroups(control.id, assetGroups ?? [], assetMappings ?? []), ac.assetChecks)}
+            coverage={coverageFor(
+              applicableGroups(control.id, assetGroups ?? [], assetMappings ?? []),
+              effectiveAssetChecks(ac, control.assessmentObjectives.map((o) => o.id))
+            )}
           />
         ))}
         {rows.length === 0 && (
@@ -256,13 +260,25 @@ function ControlRow({
         <button onClick={onToggle} className="flex h-9 items-center justify-center text-muted-foreground">
           {expanded ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
         </button>
-        <button onClick={onToggle} className="flex h-9 items-center gap-2 text-left">
-          <span
-            className="h-3.5 w-[3px] shrink-0 rounded-full"
-            style={{ backgroundColor: maturityColor(ac.maturityScore) }}
-          />
-          <span className="text-[12px] font-medium">{control.label}</span>
-        </button>
+        <div className="flex h-9 items-center gap-1">
+          <button onClick={onToggle} className="flex h-9 items-center gap-2 text-left">
+            <span
+              className="h-3.5 w-[3px] shrink-0 rounded-full"
+              style={{ backgroundColor: maturityColor(ac.maturityScore) }}
+            />
+            <span className="text-[12px] font-medium">{control.label}</span>
+          </button>
+          <a
+            href={controlWorkspaceHref(ac.assessmentId, control.id)}
+            target="_blank"
+            rel="noopener"
+            aria-label={`Ouvrir ${control.label} dans un nouvel onglet`}
+            title="Ouvrir dans un nouvel onglet (matrice actifs × exigences)"
+            className="rounded-sm p-1 text-muted-foreground/50 transition-colors hover:bg-muted hover:text-accent focus-visible:text-accent group-hover:text-muted-foreground"
+          >
+            <ExternalLink size={12} />
+          </a>
+        </div>
         <button onClick={onToggle} className="h-9 truncate pr-3 text-left text-[12px] text-muted-foreground">
           {controlTitle(control, lang)}
         </button>

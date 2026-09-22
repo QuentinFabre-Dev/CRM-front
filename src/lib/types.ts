@@ -182,14 +182,29 @@ export const MATURITY_LEVELS = [
   { score: 5, label: "Optimisé", description: "Amélioration continue, bonnes pratiques." },
 ] as const;
 
+/** Niveau de déploiement d'un objectif d'évaluation sur une catégorie d'actifs. */
+export type DeploymentLevel = "none" | "partial" | "full" | "na";
+
+export const DEPLOYMENT_LEVELS: { id: DeploymentLevel; label: string }[] = [
+  { id: "none", label: "Pas en place" },
+  { id: "partial", label: "Partiellement déployé" },
+  { id: "full", label: "Totalement déployé" },
+  { id: "na", label: "Non applicable" },
+];
+
 export interface AssessmentControl {
   id: string;
   assessmentId: string;
   controlId: string;
   maturityScore: number | null;
   objectiveChecks: Record<string, boolean>;
-  /** Couverture : groupe d'actifs → contrôle vérifié sur ce groupe. Absent tant qu'aucun actif n'est mappé. */
+  /**
+   * Couverture saisie à la main : groupe d'actifs → contrôle vérifié sur ce groupe.
+   * Ignorée pour un groupe dès que la matrice objectifs × actifs a une saisie pour lui.
+   */
   assetChecks?: Record<string, boolean>;
+  /** Matrice objectif d'évaluation → groupe d'actifs → niveau de déploiement. */
+  objectiveAssetLevels?: Record<string, Record<string, DeploymentLevel>>;
   evidence: string;
   notes: string;
   updatedAt: string;

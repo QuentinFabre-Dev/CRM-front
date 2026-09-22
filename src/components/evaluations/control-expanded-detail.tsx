@@ -1,10 +1,18 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Boxes, CheckSquare } from "lucide-react";
+import { Boxes, CheckSquare, ExternalLink } from "lucide-react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/lib/db";
-import { applicableGroups, coverageFor, setGroupCheck } from "@/lib/assets";
+import {
+  applicableGroups,
+  coverageFor,
+  effectiveAssetChecks,
+  groupDeploymentSummary,
+  groupHasMatrixData,
+  setGroupCheck,
+} from "@/lib/assets";
+import { controlWorkspaceHref } from "@/lib/routes";
 import { Badge } from "@/components/ui/badge";
 import { CriticalityIndicator, CriticalityLegend } from "@/components/ui/criticality-indicator";
 import { Textarea } from "@/components/ui/input";
@@ -58,7 +66,9 @@ export function ControlExpandedDetail({ control, ac }: { control: Control; ac: A
     () => applicableGroups(control.id, assetGroups ?? [], assetMappings ?? []),
     [control.id, assetGroups, assetMappings]
   );
-  const coverage = coverageFor(applicable, ac.assetChecks);
+  const objectiveIds = control.assessmentObjectives.map((o) => o.id);
+  const checks = effectiveAssetChecks(ac, objectiveIds);
+  const coverage = coverageFor(applicable, checks);
 
   const cisSafeguards = useLiveQuery(async () => {
     const mapped = await db.cisMappings.where("controlId").equals(control.id).toArray();
@@ -138,9 +148,20 @@ export function ControlExpandedDetail({ control, ac }: { control: Control; ac: A
               <h4 className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
                 Objectifs d&apos;évaluation (800-53A)
               </h4>
-              <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                <CheckSquare size={12} />
-                {checkedCount}/{controlObjectives(control, lang).length}
+              <span className="flex items-center gap-3 text-[11px] text-muted-foreground">
+                <a
+                  href={controlWorkspaceHref(ac.assessmentId, control.id)}
+                  target="_blank"
+                  rel="noopener"
+                  className="inline-flex items-center gap-1 font-medium text-accent hover:underline"
+                >
+                  Évaluer par actif
+                  <ExternalLink size={11} />
+                </a>
+                <span className="flex items-center gap-1">
+                  <CheckSquare size={12} />
+                  {checkedCount}/{controlObjectives(control, lang).length}
+                </span>
               </span>
             </div>
             <div className="mb-2">
@@ -180,19 +201,43 @@ export function ControlExpandedDetail({ control, ac }: { control: Control; ac: A
               </span>
             </div>
             <ul className="max-h-[240px] space-y-1.5 overflow-y-auto rounded-sm border border-border p-3">
-              {applicable.map((group) => (
-                <li key={group.id}>
-                  <label className="flex cursor-pointer items-start gap-2.5">
-                    <input
-                      type="checkbox"
-                      checked={Boolean(ac.assetChecks?.[group.id])}
-                      onChange={(e) => setGroupCheck(ac.id, ac.assetChecks, group.id, e.target.checked)}
-                      className="mt-0.5 h-3.5 w-3.5 shrink-0 rounded-sm border-border accent-accent"
-                    />
-                    <span className="text-[12px] leading-snug">{group.name}</span>
-                  </label>
-                </li>
-              ))}
+              {applicable.map((group) => {
+                // Une colonne renseignée dans la matrice fait foi : la case devient un simple reflet.
+                if (groupHasMatrixData(ac, objectiveIds, group.id)) {
+                  const s = groupDeploymentSummary(ac, objectiveIds, group.id);
+                  return (
+                    <li key={group.id} className="flex items-start gap-2.5">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(checks[group.id])}
+                        disabled
+                        aria-label={`${group.name} : couverture calculée depuis la matrice`}
+                        className="mt-0.5 h-3.5 w-3.5 shrink-0 rounded-sm border-border accent-accent"
+                      />
+                      <span className="text-[12px] leading-snug">
+                        {group.name}
+                        <span className="ml-1.5 text-[10.5px] tabular-nums text-muted-foreground">
+                          matrice : {s.full} totalement · {s.partial} partiellement · {s.none} pas en place
+                          {s.unset > 0 ? ` · ${s.unset} à évaluer` : ""}
+                        </span>
+                      </span>
+                    </li>
+                  );
+                }
+                return (
+                  <li key={group.id}>
+                    <label className="flex cursor-pointer items-start gap-2.5">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(ac.assetChecks?.[group.id])}
+                        onChange={(e) => setGroupCheck(ac.id, ac.assetChecks, group.id, e.target.checked)}
+                        className="mt-0.5 h-3.5 w-3.5 shrink-0 rounded-sm border-border accent-accent"
+                      />
+                      <span className="text-[12px] leading-snug">{group.name}</span>
+                    </label>
+                  </li>
+                );
+              })}
             </ul>
           </section>
         )}

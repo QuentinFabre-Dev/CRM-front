@@ -1,9 +1,25 @@
 import type ExcelJS from "exceljs";
 import { db } from "./db";
 import { average, maturityColor, maturityLabel } from "./maturity";
-import { controlTitle, controlFamilyTitle, csfCategoryTitle, csfFunctionTitle, csfSubcategoryText, type Lang } from "./i18n";
-import { BASELINES, sortByCsfFunctionOrder } from "./types";
-import { applicableGroups, coverageFor } from "./assets";
+import {
+  controlTitle,
+  controlFamilyTitle,
+  controlObjectives,
+  csfCategoryTitle,
+  csfFunctionTitle,
+  csfSubcategoryText,
+  type Lang,
+} from "./i18n";
+import { BASELINES, DEPLOYMENT_LEVELS, sortByCsfFunctionOrder, type DeploymentLevel } from "./types";
+import { applicableGroups, coverageFor, effectiveAssetChecks } from "./assets";
+import { STATUS } from "./chart-colors";
+
+const DEPLOYMENT_FILL: Record<DeploymentLevel, string> = {
+  none: STATUS.critical,
+  partial: STATUS.warning,
+  full: STATUS.good,
+  na: "#8c8a82",
+};
 
 const HEADER_FILL = "FFF1F0EA";
 const BORDER_COLOR = "FFD9D7CC";
@@ -60,6 +76,12 @@ export async function exportAssessmentToExcel(assessmentId: string, lang: Lang =
 
   const controlById = new Map(controls.map((c) => [c.id, c]));
   const scoreByControlId = new Map(assessmentControls.map((ac) => [ac.controlId, ac.maturityScore]));
+  const checksByControlId = new Map(
+    assessmentControls.map((ac) => [
+      ac.controlId,
+      effectiveAssetChecks(ac, controlById.get(ac.controlId)?.assessmentObjectives.map((o) => o.id) ?? []),
+    ])
+  );
 
   const rows = assessmentControls
     .map((ac) => ({ ac, control: controlById.get(ac.controlId) }))
@@ -143,8 +165,9 @@ export async function exportAssessmentToExcel(assessmentId: string, lang: Lang =
     let assetCells: (string | number)[] = [];
     if (hasAssets) {
       const applicable = applicableGroups(control.id, assetGroups, controlAssetGroups);
-      const coverage = coverageFor(applicable, ac.assetChecks);
-      const uncovered = applicable.filter((g) => !ac.assetChecks?.[g.id]).map((g) => g.name);
+      const checks = checksByControlId.get(control.id);
+      const coverage = coverageFor(applicable, checks);
+      const uncovered = applicable.filter((g) => !checks?.[g.id]).map((g) => g.name);
       assetCells = [coverage ? `${coverage.covered}/${coverage.total}` : "—", uncovered.join(", ")];
     }
 
@@ -218,10 +241,9 @@ export async function exportAssessmentToExcel(assessmentId: string, lang: Lang =
     ];
     styleHeaderRow(assetSheet.getRow(1));
 
-    const acByControlId = new Map(assessmentControls.map((ac) => [ac.controlId, ac]));
     for (const group of [...assetGroups].sort((a, b) => a.name.localeCompare(b.name))) {
       const groupControlIds = controlAssetGroups.filter((m) => m.groupId === group.id).map((m) => m.controlId);
-      const covered = groupControlIds.filter((cid) => acByControlId.get(cid)?.assetChecks?.[group.id]).length;
+      const covered = groupControlIds.filter((cid) => checksByControlId.get(cid)?.[group.id]).length;
       const row = assetSheet.addRow([
         group.name,
         group.description,
@@ -232,6 +254,48 @@ export async function exportAssessmentToExcel(assessmentId: string, lang: Lang =
       row.font = { size: 10 };
     }
     assetSheet.autoFilter = { from: "A1", to: { row: 1, column: 5 } };
+  }
+
+  // ---------- Onglet Matrice actifs ----------
+  // Format long (une ligne par cellule saisie) : filtrable par contrôle, catégorie
+  // ou niveau, là où une grille par contrôle serait illisible dans un tableur.
+  const groupById = new Map(assetGroups.map((g) => [g.id, g]));
+  const matrixRows = rows.filter(({ ac }) => Object.keys(ac.objectiveAssetLevels ?? {}).length > 0);
+  if (matrixRows.length > 0) {
+    const matrixSheet = wb.addWorksheet("Matrice actifs", { views: [{ state: "frozen", ySplit: 1 }] });
+    matrixSheet.columns = [
+      { header: "Contrôle", width: 14 },
+      { header: "Objectif", width: 12 },
+      { header: "Énoncé de l'objectif", width: 70 },
+      { header: "Catégorie d'actifs", width: 30 },
+      { header: "Déploiement", width: 22 },
+    ];
+    styleHeaderRow(matrixSheet.getRow(1));
+
+    for (const { ac, control } of matrixRows) {
+      for (const obj of controlObjectives(control, lang)) {
+        const byGroup = ac.objectiveAssetLevels?.[obj.id] ?? {};
+        const entries = Object.entries(byGroup)
+          .map(([groupId, level]) => ({ group: groupById.get(groupId), level }))
+          .filter((e): e is { group: NonNullable<typeof e.group>; level: DeploymentLevel } => Boolean(e.group))
+          .sort((a, b) => a.group.name.localeCompare(b.group.name));
+        for (const { group, level } of entries) {
+          const row = matrixSheet.addRow([
+            control.label,
+            obj.label,
+            obj.text,
+            group.name,
+            DEPLOYMENT_LEVELS.find((l) => l.id === level)?.label ?? level,
+          ]);
+          row.font = { size: 10 };
+          row.alignment = { vertical: "top", wrapText: true };
+          const cell = row.getCell(5);
+          cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: argb(DEPLOYMENT_FILL[level]) } };
+          cell.font = { size: 10, bold: true, color: { argb: level === "partial" ? "FF2B2A26" : "FFFFFFFF" } };
+        }
+      }
+    }
+    matrixSheet.autoFilter = { from: "A1", to: { row: 1, column: 5 } };
   }
 
   const buffer = await wb.xlsx.writeBuffer();

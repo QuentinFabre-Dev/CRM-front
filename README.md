@@ -70,6 +70,15 @@ l'autre.
   Chaque contrôle affiche ensuite les catégories à couvrir et un indicateur de
   couverture. Les familles organisationnelles (AT, CA, IR, PL, PM, PS, RA, SR)
   restent hors périmètre d'actifs.
+- **Page par contrôle** — chaque contrôle s'ouvre dans un nouvel onglet (icône
+  sur sa ligne, ou « Évaluer par actif » dans son détail) avec une matrice
+  objectifs d'évaluation × catégories d'actifs : pas en place, partiellement ou
+  totalement déployé, ou non applicable. On y ajoute ou retire les catégories
+  concernées, on complète les cases vides d'une colonne en un clic, et on y note
+  maturité, preuves et notes. Une catégorie est couverte quand chaque objectif y
+  est totalement déployé ou non applicable ; cette couverture remplace la case
+  cochée à la main dès que la colonne est renseignée, et l'export Excel ajoute un
+  onglet « Matrice actifs ».
 - **CSF 2.0** — arbre Functions → Categories → Subcategories, coloré par
   maturité moyenne des contrôles mappés (crosswalk officiel), navigation vers
   les contrôles sources.
