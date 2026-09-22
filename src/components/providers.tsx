@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ThemeProvider } from "@/components/theme-provider";
+import { LangProvider } from "@/lib/i18n";
 import { seedReferenceData } from "@/lib/seed";
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -22,5 +23,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
     );
   }
 
-  return <ThemeProvider>{ready ? children : <div className="min-h-screen bg-background" />}</ThemeProvider>;
+  return (
+    <ThemeProvider>
+      <LangProvider>{ready ? children : <div className="min-h-screen bg-background" />}</LangProvider>
+    </ThemeProvider>
+  );
 }

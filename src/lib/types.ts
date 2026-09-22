@@ -30,26 +30,36 @@ export interface Control {
   isEnhancement: boolean;
   family: string;
   familyTitle: string;
+  familyTitleFr?: string;
   label: string;
   title: string;
+  titleFr?: string;
   statement: StatementPart[];
+  statementFr?: StatementPart[];
   discussion: string;
+  discussionFr?: string;
   assessmentObjectives: AssessmentObjective[];
+  assessmentObjectivesFr?: (AssessmentObjective & { textFr: string })[];
   assessmentMethods: AssessmentMethod[];
+  assessmentMethodsFr?: (AssessmentMethod & { objectsFr: string })[];
   baselines: Baseline[];
 }
 
 export interface CsfFunction {
   id: string;
   title: string;
+  titleFr?: string;
   text: string;
+  textFr?: string;
 }
 
 export interface CsfCategory {
   id: string;
   functionId: string;
   title: string;
+  titleFr?: string;
   text: string;
+  textFr?: string;
 }
 
 export interface CsfSubcategory {
@@ -57,6 +67,7 @@ export interface CsfSubcategory {
   categoryId: string;
   functionId: string;
   text: string;
+  textFr?: string;
 }
 
 export interface CsfMapping {

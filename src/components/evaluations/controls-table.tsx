@@ -11,6 +11,7 @@ import { maturityColor } from "@/lib/maturity";
 import { MATURITY_LEVELS, type AssessmentControl, type Control } from "@/lib/types";
 import { ControlExpandedDetail } from "@/components/evaluations/control-expanded-detail";
 import { cn } from "@/lib/utils";
+import { useLang, controlTitle, controlFamilyTitle } from "@/lib/i18n";
 
 const COLUMNS = "26px 104px minmax(160px,1fr) 76px 152px minmax(180px,320px)";
 
@@ -29,6 +30,7 @@ export function ControlsTable({
   focusControlId?: string | null;
   onFocusHandled?: () => void;
 }) {
+  const { lang } = useLang();
   const [query, setQuery] = useState("");
   const [family, setFamily] = useState("all");
   const [status, setStatus] = useState("all");
@@ -160,6 +162,7 @@ export function ControlsTable({
               if (el) rowRefs.current.set(control.id, el);
               else rowRefs.current.delete(control.id);
             }}
+            lang={lang}
           />
         ))}
         {rows.length === 0 && (
@@ -176,12 +179,14 @@ function ControlRow({
   expanded,
   onToggle,
   registerRef,
+  lang,
 }: {
   ac: AssessmentControl;
   control: Control;
   expanded: boolean;
   onToggle: () => void;
   registerRef: (el: HTMLDivElement | null) => void;
+  lang: "fr" | "en";
 }) {
   const checkedCount = Object.values(ac.objectiveChecks).filter(Boolean).length;
   const totalObjectives = control.assessmentObjectives.length;
@@ -213,7 +218,7 @@ function ControlRow({
           <span className="text-[12px] font-medium">{control.label}</span>
         </button>
         <button onClick={onToggle} className="h-9 truncate pr-3 text-left text-[12px] text-muted-foreground">
-          {control.title}
+          {controlTitle(control, lang)}
         </button>
         <span className="text-[11.5px] tabular-nums text-muted-foreground">
           {totalObjectives > 0 ? `${checkedCount}/${totalObjectives}` : "—"}

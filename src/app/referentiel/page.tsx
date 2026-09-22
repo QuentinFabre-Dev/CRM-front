@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StatementView } from "@/components/evaluations/statement-view";
 import { cn } from "@/lib/utils";
+import { useLang, controlTitle, controlFamilyTitle, controlStatement, controlDiscussion, csfFunctionTitle, csfFunctionText, csfCategoryTitle, csfSubcategoryText } from "@/lib/i18n";
 
 export default function ReferentielPage() {
   return (
@@ -38,6 +39,7 @@ export default function ReferentielPage() {
 }
 
 function ControlsBrowser() {
+  const { lang } = useLang();
   const controls = useLiveQuery(() => db.controls.toArray(), [], []);
   const [query, setQuery] = useState("");
   const [family, setFamily] = useState("all");
@@ -45,9 +47,9 @@ function ControlsBrowser() {
 
   const families = useMemo(() => {
     const map = new Map<string, string>();
-    for (const c of controls ?? []) map.set(c.family, c.familyTitle);
+    for (const c of controls ?? []) map.set(c.family, controlFamilyTitle(c, lang));
     return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0]));
-  }, [controls]);
+  }, [controls, lang]);
 
   const filtered = (controls ?? [])
     .filter((c) => family === "all" || c.family === family)
@@ -91,7 +93,7 @@ function ControlsBrowser() {
             >
               <span className="min-w-0">
                 <span className="block text-[12.5px] font-medium">{c.label}</span>
-                <span className="block truncate text-[11.5px] text-muted-foreground">{c.title}</span>
+                <span className="block truncate text-[11.5px] text-muted-foreground">{controlTitle(c, lang)}</span>
               </span>
             </button>
           ))}
@@ -102,7 +104,7 @@ function ControlsBrowser() {
           <div className="space-y-4">
             <div>
               <h2 className="text-[16px] font-medium tracking-tight">
-                {selected.label} — {selected.title}
+                {selected.label} — {controlTitle(selected, lang)}
               </h2>
               <div className="mt-1.5 flex flex-wrap gap-1.5">
                 {selected.baselines.map((b) => (
@@ -113,12 +115,12 @@ function ControlsBrowser() {
             </div>
             <section>
               <h3 className="mb-2 text-[12px] font-medium uppercase tracking-wide text-muted-foreground">Exigence</h3>
-              <StatementView parts={selected.statement} />
+              <StatementView parts={controlStatement(selected, lang)} />
             </section>
-            {selected.discussion && (
+            {controlDiscussion(selected, lang) && (
               <section>
                 <h3 className="mb-2 text-[12px] font-medium uppercase tracking-wide text-muted-foreground">Discussion</h3>
-                <p className="whitespace-pre-line text-[13px] leading-relaxed text-muted-foreground">{selected.discussion}</p>
+                <p className="whitespace-pre-line text-[13px] leading-relaxed text-muted-foreground">{controlDiscussion(selected, lang)}</p>
               </section>
             )}
           </div>
@@ -131,6 +133,7 @@ function ControlsBrowser() {
 }
 
 function CsfBrowser() {
+  const { lang } = useLang();
   const functions = useLiveQuery(() => db.csfFunctions.toArray(), [], []);
   const categories = useLiveQuery(() => db.csfCategories.toArray(), [], []);
   const subcategories = useLiveQuery(() => db.csfSubcategories.toArray(), [], []);
@@ -143,16 +146,16 @@ function CsfBrowser() {
       {(functions ?? []).map((fn) => (
         <div key={fn.id} className="rounded-md border border-border bg-surface p-4">
           <h3 className="text-[13px] font-medium">
-            {fn.id} — {fn.title}
+            {fn.id} — {csfFunctionTitle(fn, lang)}
           </h3>
-          <p className="mt-0.5 text-[12px] text-muted-foreground">{fn.text}</p>
+          <p className="mt-0.5 text-[12px] text-muted-foreground">{csfFunctionText(fn, lang)}</p>
           <div className="mt-3 space-y-3">
             {(categories ?? [])
               .filter((c) => c.functionId === fn.id)
               .map((cat) => (
                 <div key={cat.id}>
                   <p className="text-[12px] font-medium text-muted-foreground">
-                    {cat.id} — {cat.title}
+                    {cat.id} — {csfCategoryTitle(cat, lang)}
                   </p>
                   <div className="mt-1.5 space-y-1.5">
                     {(subcategories ?? [])
@@ -162,7 +165,7 @@ function CsfBrowser() {
                         return (
                           <div key={sub.id} className="rounded-sm bg-surface-2 p-2">
                             <p className="text-[11.5px]">
-                              <span className="font-medium">{sub.id}</span> — {sub.text}
+                              <span className="font-medium">{sub.id}</span> — {csfSubcategoryText(sub, lang)}
                             </p>
                             <div className="mt-1 flex flex-wrap gap-1">
                               {mapped.map((m) => (

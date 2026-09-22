@@ -6,6 +6,7 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import { db } from "@/lib/db";
 import { maturityColor, maturityLabel, average } from "@/lib/maturity";
 import { cn } from "@/lib/utils";
+import { useLang, csfFunctionTitle, csfCategoryTitle, csfSubcategoryText } from "@/lib/i18n";
 
 export function CsfTab({
   assessmentId,
@@ -14,6 +15,7 @@ export function CsfTab({
   assessmentId: string;
   onJumpToControl?: (controlId: string) => void;
 }) {
+  const { lang } = useLang();
   const functions = useLiveQuery(() => db.csfFunctions.toArray(), [], []);
   const categories = useLiveQuery(() => db.csfCategories.toArray(), [], []);
   const subcategories = useLiveQuery(() => db.csfSubcategories.toArray(), [], []);
@@ -79,7 +81,7 @@ export function CsfTab({
               <span className="flex items-center gap-2">
                 {expanded.has(fn.id) ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                 <span className="text-[13px] font-medium">
-                  {fn.id} — {fn.title}
+                  {fn.id} — {csfFunctionTitle(fn, lang)}
                 </span>
               </span>
               <span className="flex items-center gap-2 text-[12px] text-muted-foreground">
@@ -102,7 +104,7 @@ export function CsfTab({
                         <span className="flex items-center gap-2">
                           {expanded.has(catKey) ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
                           <span className="text-[12.5px] font-medium">
-                            {cat.id} — {cat.title}
+                            {cat.id} — {csfCategoryTitle(cat, lang)}
                           </span>
                         </span>
                         <span className="flex items-center gap-2 text-[11.5px] text-muted-foreground">
@@ -119,7 +121,7 @@ export function CsfTab({
                               <div key={sub.id} className="rounded-sm bg-surface-2 p-2">
                                 <div className="flex items-start justify-between gap-2">
                                   <p className="text-[11.5px] font-medium">
-                                    {sub.id} <span className="font-normal text-muted-foreground">— {sub.text}</span>
+                                    {sub.id} <span className="font-normal text-muted-foreground">— {csfSubcategoryText(sub, lang)}</span>
                                   </p>
                                   <span
                                     className={cn(

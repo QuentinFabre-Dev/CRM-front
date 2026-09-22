@@ -8,8 +8,10 @@ import { Textarea } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { StatementView } from "@/components/evaluations/statement-view";
 import { BASELINES, type AssessmentControl, type Control } from "@/lib/types";
+import { useLang, controlStatement, controlDiscussion, controlObjectives, controlMethods } from "@/lib/i18n";
 
 export function ControlExpandedDetail({ control, ac }: { control: Control; ac: AssessmentControl }) {
+  const { lang } = useLang();
   const [evidence, setEvidence] = useState(ac.evidence);
 
   useEffect(() => {
@@ -41,25 +43,25 @@ export function ControlExpandedDetail({ control, ac }: { control: Control; ac: A
               <Badge key={b}>{BASELINES.find((x) => x.id === b)?.label ?? b}</Badge>
             ))}
           </div>
-          <StatementView parts={control.statement} />
+          <StatementView parts={controlStatement(control, lang)} />
         </section>
 
-        {control.discussion && (
+        {controlDiscussion(control, lang) && (
           <section>
             <h4 className="mb-1.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Discussion</h4>
             <p className="whitespace-pre-line text-[12.5px] leading-relaxed text-muted-foreground">
-              {control.discussion}
+              {controlDiscussion(control, lang)}
             </p>
           </section>
         )}
 
-        {control.assessmentMethods.length > 0 && (
+        {controlMethods(control, lang).length > 0 && (
           <section>
             <h4 className="mb-1.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
               Méthodes d&apos;évaluation
             </h4>
             <div className="space-y-1.5">
-              {control.assessmentMethods.map((m, i) => (
+              {controlMethods(control, lang).map((m, i) => (
                 <div key={i} className="rounded-sm border border-border p-2 text-[11.5px]">
                   <Badge variant="outline" className="mb-1">
                     {m.method}
@@ -73,7 +75,7 @@ export function ControlExpandedDetail({ control, ac }: { control: Control; ac: A
       </div>
 
       <div className="space-y-4">
-        {control.assessmentObjectives.length > 0 && (
+        {controlObjectives(control, lang).length > 0 && (
           <section>
             <div className="mb-2 flex items-center justify-between">
               <h4 className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
@@ -81,11 +83,11 @@ export function ControlExpandedDetail({ control, ac }: { control: Control; ac: A
               </h4>
               <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
                 <CheckSquare size={12} />
-                {checkedCount}/{control.assessmentObjectives.length}
+                {checkedCount}/{controlObjectives(control, lang).length}
               </span>
             </div>
             <ul className="max-h-[320px] space-y-1.5 overflow-y-auto rounded-sm border border-border p-3">
-              {control.assessmentObjectives.map((obj) => (
+              {controlObjectives(control, lang).map((obj) => (
                 <li key={obj.id}>
                   <label className="flex cursor-pointer items-start gap-2.5">
                     <input
