@@ -13,8 +13,8 @@ const ICONS: Record<RiskCriticality, typeof SignalHigh> = {
 
 const STYLES: Record<RiskCriticality, string> = {
   high: "text-accent",
-  medium: "text-accent/55",
-  low: "text-muted-foreground/45",
+  medium: "text-accent/70",
+  low: "text-muted-foreground/70",
 };
 
 export function CriticalityIndicator({ level, className }: { level?: RiskCriticality; className?: string }) {
@@ -25,7 +25,7 @@ export function CriticalityIndicator({ level, className }: { level?: RiskCritica
       title={`Priorité de remédiation (estimation indicative, hors référentiel officiel NIST) : ${RISK_CRITICALITY_LABELS[level]}`}
       className={cn("mt-0.5 inline-flex shrink-0 items-center", STYLES[level], className)}
     >
-      <Icon size={13} strokeWidth={2.4} />
+      <Icon size={14} strokeWidth={2.6} />
     </span>
   );
 }
