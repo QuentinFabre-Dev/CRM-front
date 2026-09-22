@@ -85,6 +85,19 @@ export interface Assessment {
   assessor: string;
   createdAt: string;
   status: AssessmentStatus;
+  /** Renseigné quand le périmètre vient d'un modèle personnalisé plutôt que d'une baseline NIST. */
+  templateId?: string;
+  /** Nom figé à la création : l'évaluation reste lisible même si le modèle est renommé ou supprimé. */
+  templateName?: string;
+}
+
+export interface ControlTemplate {
+  id: string;
+  name: string;
+  description: string;
+  controlIds: string[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 export const MATURITY_LEVELS = [
@@ -102,9 +115,54 @@ export interface AssessmentControl {
   controlId: string;
   maturityScore: number | null;
   objectiveChecks: Record<string, boolean>;
+  /** Couverture par actif : assetId → contrôle vérifié sur cet actif. Absent sur les évaluations antérieures. */
+  assetChecks?: Record<string, boolean>;
   evidence: string;
   notes: string;
   updatedAt: string;
+}
+
+export const ASSET_TYPES = [
+  "Serveur",
+  "Poste de travail",
+  "Application",
+  "Base de données",
+  "Équipement réseau",
+  "Service cloud",
+  "Site / local",
+  "Autre",
+] as const;
+
+export interface Asset {
+  id: string;
+  assessmentId: string;
+  name: string;
+  type: string;
+  description: string;
+  createdAt: string;
+}
+
+export interface AssetGroup {
+  id: string;
+  assessmentId: string;
+  name: string;
+  description: string;
+  createdAt: string;
+}
+
+/** Appartenance many-to-many : un actif peut relever de plusieurs groupes (ex. « Prod » et « Périmètre PCI »). */
+export interface AssetGroupMember {
+  id: string;
+  groupId: string;
+  assetId: string;
+}
+
+/** Applicabilité : ce groupe d'actifs est concerné par ce contrôle. */
+export interface ControlAssetGroup {
+  id: string;
+  assessmentId: string;
+  controlId: string;
+  groupId: string;
 }
 
 export function uid(): string {

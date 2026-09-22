@@ -54,7 +54,7 @@ export default function HomePage() {
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {sorted.map((a) => {
           const stats = statsByAssessment.get(a.id);
-          const baselineLabel = BASELINES.find((b) => b.id === a.baseline)?.label ?? a.baseline;
+          const baselineLabel = a.templateName ?? BASELINES.find((b) => b.id === a.baseline)?.label ?? a.baseline;
           return (
             <Card key={a.id} className="relative p-4">
               <Link href={`/evaluations/${a.id}`} className="block">

@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { CheckSquare } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Boxes, CheckSquare } from "lucide-react";
+import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/lib/db";
+import { applicableGroupsFor, coverageFor, setAssetCheck } from "@/lib/assets";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,6 +34,29 @@ export function ControlExpandedDetail({ control, ac }: { control: Control; ac: A
   };
 
   const checkedCount = Object.values(ac.objectiveChecks).filter(Boolean).length;
+
+  const assetGroups = useLiveQuery(
+    () => db.assetGroups.where("assessmentId").equals(ac.assessmentId).toArray(),
+    [ac.assessmentId],
+    []
+  );
+  const assets = useLiveQuery(
+    () => db.assets.where("assessmentId").equals(ac.assessmentId).toArray(),
+    [ac.assessmentId],
+    []
+  );
+  const members = useLiveQuery(() => db.assetGroupMembers.toArray(), [], []);
+  const assetMappings = useLiveQuery(
+    () => db.controlAssetGroups.where("assessmentId").equals(ac.assessmentId).toArray(),
+    [ac.assessmentId],
+    []
+  );
+
+  const applicable = useMemo(
+    () => applicableGroupsFor(control.id, assetGroups ?? [], assets ?? [], members ?? [], assetMappings ?? []),
+    [control.id, assetGroups, assets, members, assetMappings]
+  );
+  const coverage = coverageFor(applicable, ac.assetChecks);
 
   return (
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
@@ -104,6 +129,49 @@ export function ControlExpandedDetail({ control, ac }: { control: Control; ac: A
                 </li>
               ))}
             </ul>
+          </section>
+        )}
+
+        {coverage && (
+          <section>
+            <div className="mb-2 flex items-center justify-between">
+              <h4 className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                Couverture actifs
+              </h4>
+              <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                <Boxes size={12} />
+                {coverage.covered}/{coverage.total}
+              </span>
+            </div>
+            <div className="max-h-[240px] space-y-2 overflow-y-auto rounded-sm border border-border p-3">
+              {applicable.map(({ group, assets: groupAssets }) => (
+                <div key={group.id}>
+                  <p className="mb-1 text-[11px] font-medium text-muted-foreground">{group.name}</p>
+                  {groupAssets.length === 0 ? (
+                    <p className="text-[11.5px] text-muted-foreground/70">Aucun actif dans ce groupe.</p>
+                  ) : (
+                    <ul className="space-y-1">
+                      {groupAssets.map((asset) => (
+                        <li key={asset.id}>
+                          <label className="flex cursor-pointer items-center gap-2.5">
+                            <input
+                              type="checkbox"
+                              checked={Boolean(ac.assetChecks?.[asset.id])}
+                              onChange={(e) => setAssetCheck(ac.id, ac.assetChecks, asset.id, e.target.checked)}
+                              className="h-3.5 w-3.5 shrink-0 rounded-sm border-border accent-accent"
+                            />
+                            <span className="text-[12px]">{asset.name}</span>
+                            {asset.type && (
+                              <span className="text-[10.5px] text-muted-foreground">{asset.type}</span>
+                            )}
+                          </label>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ))}
+            </div>
           </section>
         )}
 

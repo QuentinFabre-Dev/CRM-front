@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StatementView } from "@/components/evaluations/statement-view";
+import { TemplatesBrowser } from "@/components/templates/templates-browser";
 import { cn } from "@/lib/utils";
 import { useLang, controlTitle, controlFamilyTitle, controlStatement, controlDiscussion, csfFunctionTitle, csfFunctionText, csfCategoryTitle, csfSubcategoryText } from "@/lib/i18n";
 
@@ -26,12 +27,16 @@ export default function ReferentielPage() {
         <TabsList>
           <TabsTrigger value="controls">SP 800-53</TabsTrigger>
           <TabsTrigger value="csf">CSF 2.0</TabsTrigger>
+          <TabsTrigger value="templates">Modèles</TabsTrigger>
         </TabsList>
         <TabsContent value="controls">
           <ControlsBrowser />
         </TabsContent>
         <TabsContent value="csf">
           <CsfBrowser />
+        </TabsContent>
+        <TabsContent value="templates">
+          <TemplatesBrowser />
         </TabsContent>
       </Tabs>
     </div>

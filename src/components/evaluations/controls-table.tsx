@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { ChevronDown, ChevronRight, Search } from "lucide-react";
+import { Boxes, ChevronDown, ChevronRight, Search } from "lucide-react";
 import { db } from "@/lib/db";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -12,8 +12,9 @@ import { MATURITY_LEVELS, type AssessmentControl, type Control } from "@/lib/typ
 import { ControlExpandedDetail } from "@/components/evaluations/control-expanded-detail";
 import { cn } from "@/lib/utils";
 import { useLang, controlTitle, controlFamilyTitle } from "@/lib/i18n";
+import { applicableGroupsFor, coverageFor } from "@/lib/assets";
 
-const COLUMNS = "26px 104px minmax(160px,1fr) 76px 152px minmax(180px,320px)";
+const COLUMNS = "26px 104px minmax(160px,1fr) 108px 152px minmax(180px,320px)";
 
 const STATUS_OPTIONS = [
   { value: "all", label: "Tous les statuts" },
@@ -44,6 +45,15 @@ export function ControlsTable({
   );
   const controls = useLiveQuery(() => db.controls.toArray(), [], []);
   const controlById = useMemo(() => new Map((controls ?? []).map((c) => [c.id, c])), [controls]);
+
+  const assetGroups = useLiveQuery(() => db.assetGroups.where("assessmentId").equals(assessmentId).toArray(), [assessmentId], []);
+  const assets = useLiveQuery(() => db.assets.where("assessmentId").equals(assessmentId).toArray(), [assessmentId], []);
+  const members = useLiveQuery(() => db.assetGroupMembers.toArray(), [], []);
+  const assetMappings = useLiveQuery(
+    () => db.controlAssetGroups.where("assessmentId").equals(assessmentId).toArray(),
+    [assessmentId],
+    []
+  );
 
   const families = useMemo(() => {
     const map = new Map<string, string>();
@@ -163,6 +173,10 @@ export function ControlsTable({
               else rowRefs.current.delete(control.id);
             }}
             lang={lang}
+            coverage={coverageFor(
+              applicableGroupsFor(control.id, assetGroups ?? [], assets ?? [], members ?? [], assetMappings ?? []),
+              ac.assetChecks
+            )}
           />
         ))}
         {rows.length === 0 && (
@@ -180,6 +194,7 @@ function ControlRow({
   onToggle,
   registerRef,
   lang,
+  coverage,
 }: {
   ac: AssessmentControl;
   control: Control;
@@ -187,6 +202,7 @@ function ControlRow({
   onToggle: () => void;
   registerRef: (el: HTMLDivElement | null) => void;
   lang: "fr" | "en";
+  coverage: { covered: number; total: number } | null;
 }) {
   const checkedCount = Object.values(ac.objectiveChecks).filter(Boolean).length;
   const totalObjectives = control.assessmentObjectives.length;
@@ -220,8 +236,20 @@ function ControlRow({
         <button onClick={onToggle} className="h-9 truncate pr-3 text-left text-[12px] text-muted-foreground">
           {controlTitle(control, lang)}
         </button>
-        <span className="text-[11.5px] tabular-nums text-muted-foreground">
-          {totalObjectives > 0 ? `${checkedCount}/${totalObjectives}` : "—"}
+        <span className="flex items-center gap-1.5 text-[11.5px] tabular-nums text-muted-foreground">
+          <span>{totalObjectives > 0 ? `${checkedCount}/${totalObjectives}` : "—"}</span>
+          {coverage && (
+            <span
+              title={`Couverture actifs : ${coverage.covered}/${coverage.total}`}
+              className={cn(
+                "flex items-center gap-0.5 rounded-sm px-1 py-px text-[10.5px]",
+                coverage.covered === coverage.total ? "bg-muted" : "bg-warning/15 text-warning"
+              )}
+            >
+              <Boxes size={10} />
+              {coverage.covered}/{coverage.total}
+            </span>
+          )}
         </span>
         <MaturityCells value={ac.maturityScore} onChange={setMaturity} />
         <NotesCell ac={ac} />

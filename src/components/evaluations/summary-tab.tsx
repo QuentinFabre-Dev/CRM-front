@@ -2,9 +2,11 @@
 
 import { useMemo } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { Download } from "lucide-react";
+import { Download, FileSpreadsheet } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, Cell } from "recharts";
 import { db, exportAssessment } from "@/lib/db";
+import { exportAssessmentToExcel } from "@/lib/export-excel";
+import { useLang } from "@/lib/i18n";
 import { computeAssessmentStats } from "@/lib/assessment";
 import { average, maturityColor } from "@/lib/maturity";
 import { CHART_INK } from "@/lib/chart-colors";
@@ -23,6 +25,7 @@ function ChartTooltip({ active, payload }: { active?: boolean; payload?: { paylo
 }
 
 export function SummaryTab({ assessmentId }: { assessmentId: string }) {
+  const { lang } = useLang();
   const assessmentControls = useLiveQuery(
     () => db.assessmentControls.where("assessmentId").equals(assessmentId).toArray(),
     [assessmentId],
@@ -99,9 +102,14 @@ export function SummaryTab({ assessmentId }: { assessmentId: string }) {
             </p>
           </div>
         </div>
-        <Button variant="outline" onClick={handleExport}>
-          <Download size={14} /> Exporter le dossier (JSON)
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={() => exportAssessmentToExcel(assessmentId, lang)}>
+            <FileSpreadsheet size={14} /> Exporter en Excel
+          </Button>
+          <Button variant="outline" onClick={handleExport}>
+            <Download size={14} /> Exporter le dossier (JSON)
+          </Button>
+        </div>
       </div>
 
       <Card>

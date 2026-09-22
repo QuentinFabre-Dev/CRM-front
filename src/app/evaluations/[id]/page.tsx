@@ -9,6 +9,7 @@ import { computeAssessmentStats } from "@/lib/assessment";
 import { BASELINES } from "@/lib/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
+import { AssetsTab } from "@/components/evaluations/assets-tab";
 import { ControlsTable } from "@/components/evaluations/controls-table";
 import { CsfTab } from "@/components/evaluations/csf-tab";
 import { SummaryTab } from "@/components/evaluations/summary-tab";
@@ -36,7 +37,8 @@ export default function AssessmentPage({ params }: { params: { id: string } }) {
   if (assessment === undefined) return null;
   if (assessment === null) return <p className="text-[13px] text-muted-foreground">Évaluation introuvable.</p>;
 
-  const baselineLabel = BASELINES.find((b) => b.id === assessment.baseline)?.label ?? assessment.baseline;
+  const baselineLabel =
+    assessment.templateName ?? BASELINES.find((b) => b.id === assessment.baseline)?.label ?? assessment.baseline;
 
   return (
     <div className="flex h-[calc(100vh-8rem)] flex-col space-y-4">
@@ -48,7 +50,8 @@ export default function AssessmentPage({ params }: { params: { id: string } }) {
           <div>
             <h1 className="text-[20px] font-medium tracking-tight">{assessment.clientName}</h1>
             <p className="mt-0.5 text-[12.5px] text-muted-foreground">
-              Baseline {baselineLabel}
+              {assessment.templateName ? "Modèle " : "Baseline "}
+              {baselineLabel}
               {assessment.assessor ? ` · ${assessment.assessor}` : ""}
             </p>
           </div>
@@ -67,6 +70,7 @@ export default function AssessmentPage({ params }: { params: { id: string } }) {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-1 flex-col overflow-hidden">
         <TabsList className="self-start">
           <TabsTrigger value="controles">Contrôles</TabsTrigger>
+          <TabsTrigger value="actifs">Actifs</TabsTrigger>
           <TabsTrigger value="csf">CSF 2.0</TabsTrigger>
           <TabsTrigger value="synthese">Synthèse</TabsTrigger>
         </TabsList>
@@ -77,6 +81,10 @@ export default function AssessmentPage({ params }: { params: { id: string } }) {
             focusControlId={focusControlId}
             onFocusHandled={clearFocus}
           />
+        </TabsContent>
+
+        <TabsContent value="actifs" className="flex-1 overflow-y-auto">
+          <AssetsTab assessmentId={assessmentId} />
         </TabsContent>
 
         <TabsContent value="csf" className="flex-1 overflow-y-auto">

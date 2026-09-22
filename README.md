@@ -42,19 +42,31 @@ node scripts/fetch-nist-data.mjs
 
 - **Évaluations** — liste des dossiers clients (baseline, complétude, maturité
   moyenne), création d'une nouvelle évaluation (duplique les contrôles de la
-  baseline choisie).
+  baseline choisie ou d'un modèle personnalisé).
+- **Bilingue FR/EN** — le référentiel NIST (intitulés, exigences, discussions,
+  objectifs d'évaluation) est traduit en français ; bascule FR/EN dans la barre
+  du haut, repli automatique sur le texte officiel anglais si une traduction
+  manque.
 - **Contrôles** — liste filtrable (famille, statut) avec panneau de détail :
   exigence (texte officiel, paramètres organisationnels mis en évidence),
   discussion, checklist des objectifs d'évaluation 800-53A, méthodes
   d'évaluation (EXAMINE/INTERVIEW/TEST), notation de maturité 0-5, preuves et
   notes.
+- **Actifs** — déclaration des actifs du client, regroupement (ex. « Serveurs de
+  production »), association de chaque groupe aux contrôles qui le concernent.
+  Chaque contrôle affiche alors la liste des actifs à couvrir et un indicateur
+  de couverture, pour s'assurer qu'un contrôle est vérifié sur l'ensemble des
+  actifs applicables.
 - **CSF 2.0** — arbre Functions → Categories → Subcategories, coloré par
   maturité moyenne des contrôles mappés (crosswalk officiel), navigation vers
   les contrôles sources.
 - **Synthèse** — indicateurs clés, graphiques de maturité par famille SP 800-53
-  et par fonction CSF 2.0, export JSON du dossier complet.
-- **Référentiel** — consultation libre du catalogue complet et de CSF 2.0, hors
-  contexte d'évaluation.
+  et par fonction CSF 2.0, export Excel (.xlsx) prêt à livrer et export JSON du
+  dossier complet.
+- **Référentiel** — consultation libre du catalogue complet et de CSF 2.0, et
+  gestion des **modèles** de contrôles personnalisés (ex. « CMA light ») :
+  sélection multi-contrôles, export / import du modèle en JSON, réutilisable à
+  la création d'une évaluation.
 - **Paramètres** — import d'évaluation JSON, informations sur le référentiel
   embarqué, remise à zéro.
 
