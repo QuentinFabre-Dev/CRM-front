@@ -8,6 +8,7 @@ import { db, exportAssessment } from "@/lib/db";
 import { exportAssessmentToExcel } from "@/lib/export-excel";
 import { useLang } from "@/lib/i18n";
 import { computeAssessmentStats } from "@/lib/assessment";
+import { sortByCsfFunctionOrder } from "@/lib/types";
 import { average, maturityColor } from "@/lib/maturity";
 import { CHART_INK } from "@/lib/chart-colors";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -65,7 +66,7 @@ export function SummaryTab({ assessmentId }: { assessmentId: string }) {
       if (!groups.has(fnId)) groups.set(fnId, []);
       groups.get(fnId)!.push(score);
     }
-    return (csfFunctions ?? []).map((fn) => ({ name: fn.id, avg: average(groups.get(fn.id) ?? []) }));
+    return sortByCsfFunctionOrder(csfFunctions ?? []).map((fn) => ({ name: fn.id, avg: average(groups.get(fn.id) ?? []) }));
   }, [mappings, subcategories, assessmentControls, csfFunctions]);
 
   const handleExport = async () => {

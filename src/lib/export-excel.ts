@@ -2,7 +2,7 @@ import type ExcelJS from "exceljs";
 import { db } from "./db";
 import { average, maturityColor, maturityLabel } from "./maturity";
 import { controlTitle, controlFamilyTitle, csfCategoryTitle, csfFunctionTitle, csfSubcategoryText, type Lang } from "./i18n";
-import { BASELINES } from "./types";
+import { BASELINES, sortByCsfFunctionOrder } from "./types";
 import { applicableGroups, coverageFor } from "./assets";
 
 const HEADER_FILL = "FFF1F0EA";
@@ -184,7 +184,7 @@ export async function exportAssessmentToExcel(assessmentId: string, lang: Lang =
     mappingsBySub.get(m.subcategoryId)!.push(m.controlId);
   }
 
-  for (const fn of csfFunctions) {
+  for (const fn of sortByCsfFunctionOrder(csfFunctions)) {
     for (const cat of csfCategories.filter((c) => c.functionId === fn.id)) {
       for (const sub of csfSubcategories.filter((s) => s.categoryId === cat.id)) {
         const mapped = mappingsBySub.get(sub.id) ?? [];

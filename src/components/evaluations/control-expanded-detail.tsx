@@ -6,6 +6,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/lib/db";
 import { applicableGroups, coverageFor, setGroupCheck } from "@/lib/assets";
 import { Badge } from "@/components/ui/badge";
+import { CriticalityIndicator, CriticalityLegend } from "@/components/ui/criticality-indicator";
 import { Textarea } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { StatementView } from "@/components/evaluations/statement-view";
@@ -96,7 +97,7 @@ export function ControlExpandedDetail({ control, ac }: { control: Control; ac: A
       <div className="space-y-4">
         {controlObjectives(control, lang).length > 0 && (
           <section>
-            <div className="mb-2 flex items-center justify-between">
+            <div className="mb-1.5 flex items-center justify-between">
               <h4 className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
                 Objectifs d&apos;évaluation (800-53A)
               </h4>
@@ -105,16 +106,20 @@ export function ControlExpandedDetail({ control, ac }: { control: Control; ac: A
                 {checkedCount}/{controlObjectives(control, lang).length}
               </span>
             </div>
+            <div className="mb-2">
+              <CriticalityLegend />
+            </div>
             <ul className="max-h-[320px] space-y-1.5 overflow-y-auto rounded-sm border border-border p-3">
               {controlObjectives(control, lang).map((obj) => (
                 <li key={obj.id}>
-                  <label className="flex cursor-pointer items-start gap-2.5">
+                  <label className="flex cursor-pointer items-start gap-2">
                     <input
                       type="checkbox"
                       checked={Boolean(ac.objectiveChecks[obj.id])}
                       onChange={() => toggleObjective(obj.id)}
                       className="mt-0.5 h-3.5 w-3.5 shrink-0 rounded-sm border-border accent-accent"
                     />
+                    <CriticalityIndicator level={obj.riskCriticality} />
                     <span className="text-[12px] leading-snug">
                       <span className="mr-1 font-medium text-muted-foreground">{obj.label}</span>
                       {obj.text}

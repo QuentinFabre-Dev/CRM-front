@@ -169,11 +169,17 @@ function buildCsf(csfRaw, validControlIds) {
       for (const sub of subs) {
         const withdrawn = (sub.elements || []).some((c) => c.elementTypeIdentifier === "withdraw_reason");
         if (withdrawn) continue;
+        const examples = (sub.elements || [])
+          .filter((e) => e.elementTypeIdentifier === "implementation_example")
+          .sort((a, b) => a.elementIdentifier.localeCompare(b.elementIdentifier, undefined, { numeric: true }))
+          .map((e) => e.text);
+
         flatSubcategories.push({
           id: sub.elementIdentifier,
           categoryId: cat.elementIdentifier,
           functionId: fn.elementIdentifier,
           text: sub.text,
+          examples,
         });
         for (const rel of sub.externalRelationships || []) {
           if (!rel.shortName?.startsWith("SP 800-53 Rev 5")) continue;

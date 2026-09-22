@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { Search } from "lucide-react";
 import { db } from "@/lib/db";
-import { BASELINES } from "@/lib/types";
+import { BASELINES, sortByCsfFunctionOrder } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -12,7 +12,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StatementView } from "@/components/evaluations/statement-view";
 import { TemplatesBrowser } from "@/components/templates/templates-browser";
 import { cn } from "@/lib/utils";
-import { useLang, controlTitle, controlFamilyTitle, controlStatement, controlDiscussion, csfFunctionTitle, csfFunctionText, csfCategoryTitle, csfSubcategoryText } from "@/lib/i18n";
+import { useLang, controlTitle, controlFamilyTitle, controlStatement, controlDiscussion, csfFunctionTitle, csfFunctionText, csfCategoryTitle, csfSubcategoryText, csfSubcategoryExamples } from "@/lib/i18n";
+import { ExamplesHover } from "@/components/ui/examples-hover";
 
 export default function ReferentielPage() {
   return (
@@ -148,7 +149,7 @@ function CsfBrowser() {
 
   return (
     <div className="mt-3 space-y-3">
-      {(functions ?? []).map((fn) => (
+      {sortByCsfFunctionOrder(functions ?? []).map((fn) => (
         <div key={fn.id} className="rounded-md border border-border bg-surface p-4">
           <h3 className="text-[13px] font-medium">
             {fn.id} — {csfFunctionTitle(fn, lang)}
@@ -169,8 +170,13 @@ function CsfBrowser() {
                         const mapped = (mappings ?? []).filter((m) => m.subcategoryId === sub.id);
                         return (
                           <div key={sub.id} className="rounded-sm bg-surface-2 p-2">
-                            <p className="text-[11.5px]">
-                              <span className="font-medium">{sub.id}</span> — {csfSubcategoryText(sub, lang)}
+                            <p className="flex items-start gap-1.5 text-[11.5px]">
+                              <span>
+                                <span className="font-medium">{sub.id}</span> — {csfSubcategoryText(sub, lang)}
+                              </span>
+                              <span className="mt-0.5">
+                                <ExamplesHover examples={csfSubcategoryExamples(sub, lang)} />
+                              </span>
                             </p>
                             <div className="mt-1 flex flex-wrap gap-1">
                               {mapped.map((m) => (

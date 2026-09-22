@@ -64,7 +64,12 @@ export function controlDiscussion(c: Control, lang: Lang): string {
 
 export function controlObjectives(c: Control, lang: Lang): AssessmentObjective[] {
   if (lang === "fr" && c.assessmentObjectivesFr) {
-    return c.assessmentObjectivesFr.map((o) => ({ id: o.id, label: o.label, text: o.textFr || o.text }));
+    return c.assessmentObjectivesFr.map((o) => ({
+      id: o.id,
+      label: o.label,
+      text: o.textFr || o.text,
+      riskCriticality: o.riskCriticality,
+    }));
   }
   return c.assessmentObjectives;
 }
@@ -87,4 +92,8 @@ export function csfCategoryTitle(c: CsfCategory, lang: Lang): string {
 }
 export function csfSubcategoryText(s: CsfSubcategory, lang: Lang): string {
   return lang === "fr" ? s.textFr || s.text : s.text;
+}
+export function csfSubcategoryExamples(s: CsfSubcategory, lang: Lang): string[] {
+  if (lang === "fr" && s.examplesFr?.length) return s.examplesFr;
+  return s.examples ?? [];
 }
