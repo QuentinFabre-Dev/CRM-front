@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 60 9% 98%;
+  --surface: 0 0% 100%;
+  --surface-2: 40 9% 96%;
+  --border: 20 6% 90%;
+  --foreground: 20 14% 4%;
+  --muted: 24 6% 93%;
+  --muted-foreground: 25 5% 45%;
+  --accent: 205 87% 59%;
+  --accent-foreground: 0 0% 100%;
+  --accent-wash: 204 77% 86%;
+  --success: 120 86% 34%;
+  --warning: 41 96% 54%;
+  --danger: 0 61% 52%;
+  --ink: 20 14% 4%;
+}
+
+.dark {
+  --background: 24 10% 10%;
+  --surface: 24 9% 13%;
+  --surface-2: 24 9% 11%;
+  --border: 24 8% 21%;
+  --foreground: 40 9% 96%;
+  --muted: 24 8% 18%;
+  --muted-foreground: 24 6% 65%;
+  --accent: 205 90% 64%;
+  --accent-foreground: 24 10% 10%;
+  --accent-wash: 205 40% 22%;
+  --success: 120 55% 45%;
+  --warning: 41 90% 58%;
+  --danger: 0 65% 62%;
+  --ink: 40 9% 96%;
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+::selection {
+  background: hsl(var(--accent) / 0.25);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.25);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.4);
+  background-clip: padding-box;
+}
