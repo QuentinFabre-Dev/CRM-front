@@ -22,7 +22,7 @@ export function CriticalityIndicator({ level, className }: { level?: RiskCritica
   const Icon = ICONS[level];
   return (
     <span
-      title={`Priorité de remédiation (estimation indicative, hors référentiel officiel NIST) : ${RISK_CRITICALITY_LABELS[level]}`}
+      title={`Priorité de remédiation : ${RISK_CRITICALITY_LABELS[level]}`}
       className={cn("mt-0.5 inline-flex shrink-0 items-center", STYLES[level], className)}
     >
       <Icon size={14} strokeWidth={2.6} />

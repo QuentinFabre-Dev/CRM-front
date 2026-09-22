@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { maturityColor } from "@/lib/maturity";
-import { MATURITY_LEVELS, type AssessmentControl, type Control } from "@/lib/types";
+import { MATURITY_LEVELS, RISK_CRITICALITY_LABELS, type AssessmentControl, type Control, type RiskCriticality } from "@/lib/types";
 import { ControlExpandedDetail } from "@/components/evaluations/control-expanded-detail";
 import { cn } from "@/lib/utils";
 import { useLang, controlTitle, controlFamilyTitle } from "@/lib/i18n";
@@ -21,6 +21,19 @@ const STATUS_OPTIONS = [
   { value: "scored", label: "Évalués" },
   { value: "unscored", label: "Non évalués" },
 ];
+
+const CRITICALITY_RANK: Record<RiskCriticality, number> = { high: 3, medium: 2, low: 1 };
+
+// Un contrôle regroupe plusieurs objectifs d'évaluation, chacun avec sa propre
+// criticité : on retient la plus élevée pour représenter le contrôle dans ce filtre.
+function controlTopCriticality(control: Control): RiskCriticality | null {
+  let top: RiskCriticality | null = null;
+  for (const obj of control.assessmentObjectives) {
+    if (!obj.riskCriticality) continue;
+    if (!top || CRITICALITY_RANK[obj.riskCriticality] > CRITICALITY_RANK[top]) top = obj.riskCriticality;
+  }
+  return top;
+}
 
 export function ControlsTable({
   assessmentId,
@@ -35,6 +48,7 @@ export function ControlsTable({
   const [query, setQuery] = useState("");
   const [family, setFamily] = useState("all");
   const [status, setStatus] = useState("all");
+  const [criticality, setCriticality] = useState("all");
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const rowRefs = useRef(new Map<string, HTMLDivElement>());
 
@@ -75,9 +89,10 @@ export function ControlsTable({
       .filter(({ ac }) =>
         status === "all" ? true : status === "scored" ? ac.maturityScore !== null : ac.maturityScore === null
       )
+      .filter(({ control }) => criticality === "all" || controlTopCriticality(control) === criticality)
       .filter(({ control }) => !needle || `${control.label} ${control.title}`.toLowerCase().includes(needle))
       .sort((a, b) => a.control.id.localeCompare(b.control.id, undefined, { numeric: true }));
-  }, [assessmentControls, controlById, family, status, query]);
+  }, [assessmentControls, controlById, family, status, criticality, query]);
 
   // Arriving from the CSF tab: clear filters, open the row, scroll to it.
   useEffect(() => {
@@ -85,6 +100,7 @@ export function ControlsTable({
     setQuery("");
     setFamily("all");
     setStatus("all");
+    setCriticality("all");
     setExpanded((prev) => new Set(prev).add(focusControlId));
     const timer = setTimeout(() => {
       rowRefs.current.get(focusControlId)?.scrollIntoView({ block: "start", behavior: "smooth" });
@@ -137,6 +153,21 @@ export function ControlsTable({
               {STATUS_OPTIONS.map((o) => (
                 <SelectItem key={o.value} value={o.value}>
                   {o.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="w-44">
+          <Select value={criticality} onValueChange={setCriticality}>
+            <SelectTrigger className="h-8">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Toutes les priorités</SelectItem>
+              {(Object.keys(RISK_CRITICALITY_LABELS) as RiskCriticality[]).map((level) => (
+                <SelectItem key={level} value={level}>
+                  {RISK_CRITICALITY_LABELS[level]}
                 </SelectItem>
               ))}
             </SelectContent>
