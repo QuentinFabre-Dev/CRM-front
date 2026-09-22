@@ -12,7 +12,7 @@ import { MATURITY_LEVELS, type AssessmentControl, type Control } from "@/lib/typ
 import { ControlExpandedDetail } from "@/components/evaluations/control-expanded-detail";
 import { cn } from "@/lib/utils";
 import { useLang, controlTitle, controlFamilyTitle } from "@/lib/i18n";
-import { applicableGroupsFor, coverageFor } from "@/lib/assets";
+import { applicableGroups, coverageFor } from "@/lib/assets";
 
 const COLUMNS = "26px 104px minmax(160px,1fr) 108px 152px minmax(180px,320px)";
 
@@ -46,9 +46,11 @@ export function ControlsTable({
   const controls = useLiveQuery(() => db.controls.toArray(), [], []);
   const controlById = useMemo(() => new Map((controls ?? []).map((c) => [c.id, c])), [controls]);
 
-  const assetGroups = useLiveQuery(() => db.assetGroups.where("assessmentId").equals(assessmentId).toArray(), [assessmentId], []);
-  const assets = useLiveQuery(() => db.assets.where("assessmentId").equals(assessmentId).toArray(), [assessmentId], []);
-  const members = useLiveQuery(() => db.assetGroupMembers.toArray(), [], []);
+  const assetGroups = useLiveQuery(
+    () => db.assetGroups.where("assessmentId").equals(assessmentId).toArray(),
+    [assessmentId],
+    []
+  );
   const assetMappings = useLiveQuery(
     () => db.controlAssetGroups.where("assessmentId").equals(assessmentId).toArray(),
     [assessmentId],
@@ -173,10 +175,7 @@ export function ControlsTable({
               else rowRefs.current.delete(control.id);
             }}
             lang={lang}
-            coverage={coverageFor(
-              applicableGroupsFor(control.id, assetGroups ?? [], assets ?? [], members ?? [], assetMappings ?? []),
-              ac.assetChecks
-            )}
+            coverage={coverageFor(applicableGroups(control.id, assetGroups ?? [], assetMappings ?? []), ac.assetChecks)}
           />
         ))}
         {rows.length === 0 && (
@@ -240,7 +239,7 @@ function ControlRow({
           <span>{totalObjectives > 0 ? `${checkedCount}/${totalObjectives}` : "—"}</span>
           {coverage && (
             <span
-              title={`Couverture actifs : ${coverage.covered}/${coverage.total}`}
+              title={`Couverture actifs : ${coverage.covered}/${coverage.total} catégorie(s)`}
               className={cn(
                 "flex items-center gap-0.5 rounded-sm px-1 py-px text-[10.5px]",
                 coverage.covered === coverage.total ? "bg-muted" : "bg-warning/15 text-warning"

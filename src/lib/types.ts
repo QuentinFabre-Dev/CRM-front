@@ -115,46 +115,26 @@ export interface AssessmentControl {
   controlId: string;
   maturityScore: number | null;
   objectiveChecks: Record<string, boolean>;
-  /** Couverture par actif : assetId → contrôle vérifié sur cet actif. Absent sur les évaluations antérieures. */
+  /** Couverture : groupe d'actifs → contrôle vérifié sur ce groupe. Absent tant qu'aucun actif n'est mappé. */
   assetChecks?: Record<string, boolean>;
   evidence: string;
   notes: string;
   updatedAt: string;
 }
 
-export const ASSET_TYPES = [
-  "Serveur",
-  "Poste de travail",
-  "Application",
-  "Base de données",
-  "Équipement réseau",
-  "Service cloud",
-  "Site / local",
-  "Autre",
-] as const;
-
-export interface Asset {
-  id: string;
-  assessmentId: string;
-  name: string;
-  type: string;
-  description: string;
-  createdAt: string;
-}
-
+/**
+ * Catégorie d'actifs du périmètre (ex. « Serveur virtuel (VM) »). L'évaluation
+ * raisonne à cette maille, pas à l'instance : on vérifie qu'un contrôle est
+ * couvert sur chaque catégorie applicable.
+ */
 export interface AssetGroup {
   id: string;
   assessmentId: string;
   name: string;
   description: string;
+  /** Clé du catalogue standard quand le groupe en vient ; absente si créé à la main. */
+  templateKey?: string;
   createdAt: string;
-}
-
-/** Appartenance many-to-many : un actif peut relever de plusieurs groupes (ex. « Prod » et « Périmètre PCI »). */
-export interface AssetGroupMember {
-  id: string;
-  groupId: string;
-  assetId: string;
 }
 
 /** Applicabilité : ce groupe d'actifs est concerné par ce contrôle. */

@@ -2,241 +2,155 @@
 
 import { useMemo, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { Boxes, ChevronDown, ChevronRight, Plus, Search, Trash2 } from "lucide-react";
+import { Boxes, Plus, Search, Sparkles, Trash2 } from "lucide-react";
 import { db } from "@/lib/db";
-import {
-  createAsset,
-  createAssetGroup,
-  deleteAsset,
-  deleteAssetGroup,
-  setAssetGroups,
-  setGroupControls,
-} from "@/lib/assets";
+import { applyDefaultMapping, createAssetGroup, deleteAssetGroup, setGroupControls } from "@/lib/assets";
 import { useLang, controlTitle, controlFamilyTitle } from "@/lib/i18n";
-import { ASSET_TYPES } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
 export function AssetsTab({ assessmentId }: { assessmentId: string }) {
-  const groups = useLiveQuery(() => db.assetGroups.where("assessmentId").equals(assessmentId).toArray(), [assessmentId], []);
-  const assets = useLiveQuery(() => db.assets.where("assessmentId").equals(assessmentId).toArray(), [assessmentId], []);
-  const members = useLiveQuery(() => db.assetGroupMembers.toArray(), [], []);
+  const groups = useLiveQuery(
+    () => db.assetGroups.where("assessmentId").equals(assessmentId).toArray(),
+    [assessmentId],
+    []
+  );
   const mappings = useLiveQuery(
     () => db.controlAssetGroups.where("assessmentId").equals(assessmentId).toArray(),
     [assessmentId],
     []
   );
 
-  const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [newGroupName, setNewGroupName] = useState("");
-  const [controlPickerGroupId, setControlPickerGroupId] = useState<string | null>(null);
+  const [pickerGroupId, setPickerGroupId] = useState<string | null>(null);
+  const [confirmRemap, setConfirmRemap] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [applying, setApplying] = useState(false);
 
-  const assetById = useMemo(() => new Map((assets ?? []).map((a) => [a.id, a])), [assets]);
-  const sortedGroups = useMemo(
-    () => [...(groups ?? [])].sort((a, b) => a.name.localeCompare(b.name)),
-    [groups]
-  );
+  const sortedGroups = useMemo(() => [...(groups ?? [])].sort((a, b) => a.name.localeCompare(b.name)), [groups]);
+  const controlCountOf = (groupId: string) => (mappings ?? []).filter((m) => m.groupId === groupId).length;
+  const hasMapping = (mappings ?? []).length > 0;
 
-  const assetsOfGroup = (groupId: string) =>
-    (members ?? [])
-      .filter((m) => m.groupId === groupId)
-      .map((m) => assetById.get(m.assetId))
-      .filter((a): a is NonNullable<typeof a> => Boolean(a))
-      .sort((a, b) => a.name.localeCompare(b.name));
-
-  const controlCountOfGroup = (groupId: string) => (mappings ?? []).filter((m) => m.groupId === groupId).length;
+  const runDefaultMapping = async () => {
+    setApplying(true);
+    try {
+      const result = await applyDefaultMapping(assessmentId);
+      setMessage(
+        `Mapping proposé appliqué : ${result.groupsCreated} catégorie(s) créée(s), ${result.controlsMapped} contrôle(s) rattaché(s) à au moins une catégorie.`
+      );
+    } finally {
+      setApplying(false);
+      setConfirmRemap(false);
+    }
+  };
 
   const addGroup = async () => {
     if (!newGroupName.trim()) return;
-    const id = await createAssetGroup(assessmentId, newGroupName);
+    await createAssetGroup(assessmentId, newGroupName);
     setNewGroupName("");
-    setExpanded((prev) => new Set(prev).add(id));
   };
-
-  const ungrouped = useMemo(() => {
-    const grouped = new Set((members ?? []).map((m) => m.assetId));
-    return (assets ?? []).filter((a) => !grouped.has(a.id)).sort((a, b) => a.name.localeCompare(b.name));
-  }, [assets, members]);
 
   return (
     <div className="space-y-3">
       <p className="text-[12.5px] text-muted-foreground">
-        Déclarez les actifs du client, regroupez-les, puis associez chaque groupe aux contrôles qui le concernent.
-        Lors de l&apos;évaluation, chaque contrôle affiche la liste des actifs à couvrir.
+        Le périmètre se raisonne par catégorie d&apos;actifs (serveur physique, VM, instance infonuagique…), pas par
+        machine. Chaque contrôle affiche ensuite les catégories sur lesquelles il doit être couvert.
       </p>
 
       <div className="flex flex-wrap items-center gap-2">
+        {hasMapping && !confirmRemap ? (
+          <Button size="sm" variant="outline" onClick={() => setConfirmRemap(true)}>
+            <Sparkles size={14} /> Réappliquer le mapping proposé
+          </Button>
+        ) : confirmRemap ? (
+          <>
+            <Button size="sm" variant="danger" onClick={runDefaultMapping} disabled={applying}>
+              {applying ? "Application…" : "Confirmer : remplacer le mapping actuel"}
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setConfirmRemap(false)}>
+              Annuler
+            </Button>
+          </>
+        ) : (
+          <Button size="sm" onClick={runDefaultMapping} disabled={applying}>
+            <Sparkles size={14} /> {applying ? "Application…" : "Proposer un mapping"}
+          </Button>
+        )}
+
+        <span className="mx-1 h-5 w-px bg-border" />
+
         <Input
-          placeholder="Nom d'un nouveau groupe (ex. Serveurs de production)"
+          placeholder="Ajouter une catégorie sur mesure"
           value={newGroupName}
           onChange={(e) => setNewGroupName(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && addGroup()}
-          className="h-9 w-80"
+          className="h-8 w-64"
         />
-        <Button size="sm" onClick={addGroup} disabled={!newGroupName.trim()}>
-          <Plus size={14} /> Créer le groupe
+        <Button size="sm" variant="outline" onClick={addGroup} disabled={!newGroupName.trim()}>
+          <Plus size={13} /> Ajouter
         </Button>
       </div>
 
-      {sortedGroups.length === 0 && (
-        <p className="rounded-md border border-border bg-surface p-4 text-[12.5px] text-muted-foreground">
-          Aucun groupe d&apos;actifs. Commencez par en créer un ci-dessus.
-        </p>
-      )}
+      {message && <p className="text-[12.5px] text-accent">{message}</p>}
 
-      {sortedGroups.map((group) => {
-        const groupAssets = assetsOfGroup(group.id);
-        const isOpen = expanded.has(group.id);
-        return (
-          <div key={group.id} className="rounded-md border border-border bg-surface">
-            <div className="flex items-center gap-2 p-3">
-              <button
-                onClick={() =>
-                  setExpanded((prev) => {
-                    const next = new Set(prev);
-                    next.has(group.id) ? next.delete(group.id) : next.add(group.id);
-                    return next;
-                  })
-                }
-                className="flex flex-1 items-center gap-2 text-left"
-              >
-                {isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                <Boxes size={14} className="text-muted-foreground" />
-                <span className="text-[13px] font-medium">{group.name}</span>
-                <Badge variant="outline">{groupAssets.length} actif(s)</Badge>
-                <Badge variant="outline">{controlCountOfGroup(group.id)} contrôle(s)</Badge>
-              </button>
-              <Button size="sm" variant="outline" onClick={() => setControlPickerGroupId(group.id)}>
-                Contrôles applicables
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                title="Supprimer le groupe"
-                onClick={() => deleteAssetGroup(group.id)}
-              >
-                <Trash2 size={14} className="text-danger" />
-              </Button>
-            </div>
-
-            {isOpen && (
-              <div className="border-t border-border p-3">
-                <AssetRows assets={groupAssets} allGroups={sortedGroups} members={members ?? []} />
-                <AddAssetForm assessmentId={assessmentId} defaultGroupId={group.id} />
-              </div>
-            )}
+      {sortedGroups.length === 0 ? (
+        <div className="rounded-md border border-border bg-surface p-4">
+          <p className="text-[12.5px] text-muted-foreground">
+            Aucune catégorie d&apos;actifs. « Proposer un mapping » crée le catalogue standard (serveur physique,
+            VM, instance infonuagique, SaaS, conteneur, poste, mobile, réseau, base de données, application,
+            annuaire/IAM, stockage, site, OT/IoT) et rattache chaque contrôle aux catégories pertinentes selon sa
+            famille SP 800-53. Tout reste modifiable ensuite.
+          </p>
+        </div>
+      ) : (
+        <div className="overflow-hidden rounded-md border border-border bg-surface">
+          <div className="grid grid-cols-[minmax(0,1fr)_120px_auto] items-center gap-3 border-b border-border bg-surface-2 px-3 py-2 text-[10.5px] font-medium uppercase tracking-wide text-muted-foreground">
+            <span>Catégorie d&apos;actifs</span>
+            <span>Contrôles</span>
+            <span />
           </div>
-        );
-      })}
-
-      {ungrouped.length > 0 && (
-        <div className="rounded-md border border-border bg-surface p-3">
-          <p className="mb-2 text-[12px] font-medium text-muted-foreground">Actifs sans groupe</p>
-          <AssetRows assets={ungrouped} allGroups={sortedGroups} members={members ?? []} />
+          {sortedGroups.map((group) => (
+            <div
+              key={group.id}
+              className="grid grid-cols-[minmax(0,1fr)_120px_auto] items-center gap-3 border-b border-border px-3 py-2.5 last:border-b-0"
+            >
+              <div className="min-w-0">
+                <p className="flex items-center gap-2 text-[12.5px] font-medium">
+                  <Boxes size={13} className="shrink-0 text-muted-foreground" />
+                  {group.name}
+                </p>
+                {group.description && (
+                  <p className="mt-0.5 truncate pl-[21px] text-[11.5px] text-muted-foreground">{group.description}</p>
+                )}
+              </div>
+              <Badge variant="outline" className="justify-self-start">
+                {controlCountOf(group.id)}
+              </Badge>
+              <div className="flex items-center gap-1">
+                <Button size="sm" variant="outline" onClick={() => setPickerGroupId(group.id)}>
+                  Contrôles applicables
+                </Button>
+                <Button size="sm" variant="ghost" title="Supprimer" onClick={() => deleteAssetGroup(group.id)}>
+                  <Trash2 size={14} className="text-danger" />
+                </Button>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
-      {controlPickerGroupId && (
+      {pickerGroupId && (
         <ControlPickerDialog
           assessmentId={assessmentId}
-          groupId={controlPickerGroupId}
-          groupName={sortedGroups.find((g) => g.id === controlPickerGroupId)?.name ?? ""}
-          onClose={() => setControlPickerGroupId(null)}
+          groupId={pickerGroupId}
+          groupName={sortedGroups.find((g) => g.id === pickerGroupId)?.name ?? ""}
+          onClose={() => setPickerGroupId(null)}
         />
       )}
-    </div>
-  );
-}
-
-function AssetRows({
-  assets,
-  allGroups,
-  members,
-}: {
-  assets: { id: string; name: string; type: string; description: string }[];
-  allGroups: { id: string; name: string }[];
-  members: { groupId: string; assetId: string }[];
-}) {
-  if (assets.length === 0) {
-    return <p className="mb-2 text-[12px] text-muted-foreground">Aucun actif dans ce groupe.</p>;
-  }
-  return (
-    <div className="mb-2 space-y-1">
-      {assets.map((asset) => {
-        const assetGroupIds = members.filter((m) => m.assetId === asset.id).map((m) => m.groupId);
-        return (
-          <div key={asset.id} className="flex items-center gap-2 rounded-sm bg-surface-2 px-2.5 py-1.5">
-            <span className="text-[12px] font-medium">{asset.name}</span>
-            {asset.type && <Badge variant="outline">{asset.type}</Badge>}
-            {asset.description && (
-              <span className="truncate text-[11.5px] text-muted-foreground">{asset.description}</span>
-            )}
-            <div className="ml-auto flex items-center gap-1.5">
-              <Select
-                value={assetGroupIds[0] ?? ""}
-                onValueChange={(v) => setAssetGroups(asset.id, v ? [v] : [])}
-              >
-                <SelectTrigger className="h-7 w-44 text-[11.5px]">
-                  <SelectValue placeholder="Groupe…" />
-                </SelectTrigger>
-                <SelectContent>
-                  {allGroups.map((g) => (
-                    <SelectItem key={g.id} value={g.id}>
-                      {g.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button size="sm" variant="ghost" title="Supprimer l'actif" onClick={() => deleteAsset(asset.id)}>
-                <Trash2 size={13} className="text-danger" />
-              </Button>
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-function AddAssetForm({ assessmentId, defaultGroupId }: { assessmentId: string; defaultGroupId: string }) {
-  const [name, setName] = useState("");
-  const [type, setType] = useState<string>(ASSET_TYPES[0]);
-
-  const submit = async () => {
-    if (!name.trim()) return;
-    await createAsset(assessmentId, { name, type, groupIds: [defaultGroupId] });
-    setName("");
-  };
-
-  return (
-    <div className="flex flex-wrap items-center gap-2">
-      <Input
-        placeholder="Nom de l'actif (ex. srv-web-01)"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && submit()}
-        className="h-8 w-64"
-      />
-      <Select value={type} onValueChange={setType}>
-        <SelectTrigger className="h-8 w-44">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {ASSET_TYPES.map((t) => (
-            <SelectItem key={t} value={t}>
-              {t}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      <Button size="sm" variant="outline" onClick={submit} disabled={!name.trim()}>
-        <Plus size={13} /> Ajouter l&apos;actif
-      </Button>
     </div>
   );
 }

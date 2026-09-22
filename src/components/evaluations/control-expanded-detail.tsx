@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Boxes, CheckSquare } from "lucide-react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/lib/db";
-import { applicableGroupsFor, coverageFor, setAssetCheck } from "@/lib/assets";
+import { applicableGroups, coverageFor, setGroupCheck } from "@/lib/assets";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,12 +40,6 @@ export function ControlExpandedDetail({ control, ac }: { control: Control; ac: A
     [ac.assessmentId],
     []
   );
-  const assets = useLiveQuery(
-    () => db.assets.where("assessmentId").equals(ac.assessmentId).toArray(),
-    [ac.assessmentId],
-    []
-  );
-  const members = useLiveQuery(() => db.assetGroupMembers.toArray(), [], []);
   const assetMappings = useLiveQuery(
     () => db.controlAssetGroups.where("assessmentId").equals(ac.assessmentId).toArray(),
     [ac.assessmentId],
@@ -53,8 +47,8 @@ export function ControlExpandedDetail({ control, ac }: { control: Control; ac: A
   );
 
   const applicable = useMemo(
-    () => applicableGroupsFor(control.id, assetGroups ?? [], assets ?? [], members ?? [], assetMappings ?? []),
-    [control.id, assetGroups, assets, members, assetMappings]
+    () => applicableGroups(control.id, assetGroups ?? [], assetMappings ?? []),
+    [control.id, assetGroups, assetMappings]
   );
   const coverage = coverageFor(applicable, ac.assetChecks);
 
@@ -136,42 +130,28 @@ export function ControlExpandedDetail({ control, ac }: { control: Control; ac: A
           <section>
             <div className="mb-2 flex items-center justify-between">
               <h4 className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-                Couverture actifs
+                Couverture par catégorie d&apos;actifs
               </h4>
               <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
                 <Boxes size={12} />
                 {coverage.covered}/{coverage.total}
               </span>
             </div>
-            <div className="max-h-[240px] space-y-2 overflow-y-auto rounded-sm border border-border p-3">
-              {applicable.map(({ group, assets: groupAssets }) => (
-                <div key={group.id}>
-                  <p className="mb-1 text-[11px] font-medium text-muted-foreground">{group.name}</p>
-                  {groupAssets.length === 0 ? (
-                    <p className="text-[11.5px] text-muted-foreground/70">Aucun actif dans ce groupe.</p>
-                  ) : (
-                    <ul className="space-y-1">
-                      {groupAssets.map((asset) => (
-                        <li key={asset.id}>
-                          <label className="flex cursor-pointer items-center gap-2.5">
-                            <input
-                              type="checkbox"
-                              checked={Boolean(ac.assetChecks?.[asset.id])}
-                              onChange={(e) => setAssetCheck(ac.id, ac.assetChecks, asset.id, e.target.checked)}
-                              className="h-3.5 w-3.5 shrink-0 rounded-sm border-border accent-accent"
-                            />
-                            <span className="text-[12px]">{asset.name}</span>
-                            {asset.type && (
-                              <span className="text-[10.5px] text-muted-foreground">{asset.type}</span>
-                            )}
-                          </label>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
+            <ul className="max-h-[240px] space-y-1.5 overflow-y-auto rounded-sm border border-border p-3">
+              {applicable.map((group) => (
+                <li key={group.id}>
+                  <label className="flex cursor-pointer items-start gap-2.5">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(ac.assetChecks?.[group.id])}
+                      onChange={(e) => setGroupCheck(ac.id, ac.assetChecks, group.id, e.target.checked)}
+                      className="mt-0.5 h-3.5 w-3.5 shrink-0 rounded-sm border-border accent-accent"
+                    />
+                    <span className="text-[12px] leading-snug">{group.name}</span>
+                  </label>
+                </li>
               ))}
-            </div>
+            </ul>
           </section>
         )}
 

@@ -3,7 +3,7 @@ import { db } from "./db";
 import { average, maturityColor, maturityLabel } from "./maturity";
 import { controlTitle, controlFamilyTitle, csfCategoryTitle, csfFunctionTitle, csfSubcategoryText, type Lang } from "./i18n";
 import { BASELINES } from "./types";
-import { applicableGroupsFor, coverageFor } from "./assets";
+import { applicableGroups, coverageFor } from "./assets";
 
 const HEADER_FILL = "FFF1F0EA";
 const BORDER_COLOR = "FFD9D7CC";
@@ -45,8 +45,6 @@ export async function exportAssessmentToExcel(assessmentId: string, lang: Lang =
     csfSubcategories,
     mappings,
     assetGroups,
-    assets,
-    assetMembers,
     controlAssetGroups,
   ] = await Promise.all([
     db.assessmentControls.where("assessmentId").equals(assessmentId).toArray(),
@@ -56,8 +54,6 @@ export async function exportAssessmentToExcel(assessmentId: string, lang: Lang =
     db.csfSubcategories.toArray(),
     db.csfMappings.toArray(),
     db.assetGroups.where("assessmentId").equals(assessmentId).toArray(),
-    db.assets.where("assessmentId").equals(assessmentId).toArray(),
-    db.assetGroupMembers.toArray(),
     db.controlAssetGroups.where("assessmentId").equals(assessmentId).toArray(),
   ]);
   const hasAssets = controlAssetGroups.length > 0;
@@ -130,8 +126,8 @@ export async function exportAssessmentToExcel(assessmentId: string, lang: Lang =
     { header: "Objectifs cochés", width: 16 },
     ...(hasAssets
       ? [
-          { header: "Actifs couverts", width: 16 },
-          { header: "Actifs non couverts", width: 40 },
+          { header: "Catégories couvertes", width: 18 },
+          { header: "Catégories non couvertes", width: 44 },
         ]
       : []),
     { header: "Baselines", width: 22 },
@@ -146,12 +142,9 @@ export async function exportAssessmentToExcel(assessmentId: string, lang: Lang =
 
     let assetCells: (string | number)[] = [];
     if (hasAssets) {
-      const applicable = applicableGroupsFor(control.id, assetGroups, assets, assetMembers, controlAssetGroups);
+      const applicable = applicableGroups(control.id, assetGroups, controlAssetGroups);
       const coverage = coverageFor(applicable, ac.assetChecks);
-      const uncovered = applicable
-        .flatMap((g) => g.assets)
-        .filter((a) => !ac.assetChecks?.[a.id])
-        .map((a) => a.name);
+      const uncovered = applicable.filter((g) => !ac.assetChecks?.[g.id]).map((g) => g.name);
       assetCells = [coverage ? `${coverage.covered}/${coverage.total}` : "—", uncovered.join(", ")];
     }
 
@@ -217,34 +210,26 @@ export async function exportAssessmentToExcel(assessmentId: string, lang: Lang =
   if (hasAssets) {
     const assetSheet = wb.addWorksheet("Actifs", { views: [{ state: "frozen", ySplit: 1 }] });
     assetSheet.columns = [
-      { header: "Groupe", width: 30 },
-      { header: "Actif", width: 28 },
-      { header: "Type", width: 20 },
-      { header: "Contrôles applicables", width: 16 },
-      { header: "Contrôles couverts", width: 16 },
+      { header: "Catégorie d'actifs", width: 30 },
+      { header: "Périmètre", width: 46 },
+      { header: "Contrôles applicables", width: 18 },
+      { header: "Contrôles couverts", width: 18 },
+      { header: "Couverture", width: 12 },
     ];
     styleHeaderRow(assetSheet.getRow(1));
 
     const acByControlId = new Map(assessmentControls.map((ac) => [ac.controlId, ac]));
     for (const group of [...assetGroups].sort((a, b) => a.name.localeCompare(b.name))) {
       const groupControlIds = controlAssetGroups.filter((m) => m.groupId === group.id).map((m) => m.controlId);
-      const groupAssets = assetMembers
-        .filter((m) => m.groupId === group.id)
-        .map((m) => assets.find((a) => a.id === m.assetId))
-        .filter((a): a is (typeof assets)[number] => Boolean(a))
-        .sort((a, b) => a.name.localeCompare(b.name));
-
-      for (const asset of groupAssets) {
-        const covered = groupControlIds.filter((cid) => acByControlId.get(cid)?.assetChecks?.[asset.id]).length;
-        const row = assetSheet.addRow([
-          group.name,
-          asset.name,
-          asset.type,
-          groupControlIds.length,
-          `${covered}/${groupControlIds.length}`,
-        ]);
-        row.font = { size: 10 };
-      }
+      const covered = groupControlIds.filter((cid) => acByControlId.get(cid)?.assetChecks?.[group.id]).length;
+      const row = assetSheet.addRow([
+        group.name,
+        group.description,
+        groupControlIds.length,
+        covered,
+        groupControlIds.length > 0 ? `${Math.round((covered / groupControlIds.length) * 100)}%` : "—",
+      ]);
+      row.font = { size: 10 };
     }
     assetSheet.autoFilter = { from: "A1", to: { row: 1, column: 5 } };
   }

@@ -2,9 +2,7 @@ import Dexie, { type Table } from "dexie";
 import type {
   Assessment,
   AssessmentControl,
-  Asset,
   AssetGroup,
-  AssetGroupMember,
   Control,
   ControlAssetGroup,
   ControlTemplate,
@@ -23,9 +21,7 @@ export class ControlStudioDatabase extends Dexie {
   assessments!: Table<Assessment, string>;
   assessmentControls!: Table<AssessmentControl, string>;
   controlTemplates!: Table<ControlTemplate, string>;
-  assets!: Table<Asset, string>;
   assetGroups!: Table<AssetGroup, string>;
-  assetGroupMembers!: Table<AssetGroupMember, string>;
   controlAssetGroups!: Table<ControlAssetGroup, string>;
 
   constructor() {
@@ -48,6 +44,12 @@ export class ControlStudioDatabase extends Dexie {
       assetGroupMembers: "id, groupId, assetId, [groupId+assetId]",
       controlAssetGroups: "id, assessmentId, controlId, groupId, [assessmentId+controlId], [groupId+controlId]",
     });
+    // L'évaluation raisonne à la maille catégorie d'actifs : la table d'instances
+    // et son join n'ont plus d'objet.
+    this.version(4).stores({
+      assets: null,
+      assetGroupMembers: null,
+    });
   }
 }
 
@@ -59,21 +61,17 @@ export interface AssessmentExportPayload {
   exportedAt: string;
   assessment: Assessment;
   assessmentControls: AssessmentControl[];
-  /** Absents des exports v1 : traités comme des listes vides à l'import. */
-  assets?: Asset[];
+  /** Absents des exports antérieurs : traités comme des listes vides à l'import. */
   assetGroups?: AssetGroup[];
-  assetGroupMembers?: AssetGroupMember[];
   controlAssetGroups?: ControlAssetGroup[];
 }
 
-export const EXPORT_VERSION = 2;
+export const EXPORT_VERSION = 3;
 
 const ASSESSMENT_TABLES = () => [
   db.assessments,
   db.assessmentControls,
-  db.assets,
   db.assetGroups,
-  db.assetGroupMembers,
   db.controlAssetGroups,
 ];
 
@@ -81,23 +79,18 @@ export async function exportAssessment(assessmentId: string): Promise<Assessment
   const assessment = await db.assessments.get(assessmentId);
   if (!assessment) throw new Error("Évaluation introuvable");
 
-  const [assessmentControls, assets, assetGroups, controlAssetGroups] = await Promise.all([
+  const [assessmentControls, assetGroups, controlAssetGroups] = await Promise.all([
     db.assessmentControls.where("assessmentId").equals(assessmentId).toArray(),
-    db.assets.where("assessmentId").equals(assessmentId).toArray(),
     db.assetGroups.where("assessmentId").equals(assessmentId).toArray(),
     db.controlAssetGroups.where("assessmentId").equals(assessmentId).toArray(),
   ]);
-  const groupIds = new Set(assetGroups.map((g) => g.id));
-  const assetGroupMembers = (await db.assetGroupMembers.toArray()).filter((m) => groupIds.has(m.groupId));
 
   return {
     version: EXPORT_VERSION,
     exportedAt: new Date().toISOString(),
     assessment,
     assessmentControls,
-    assets,
     assetGroups,
-    assetGroupMembers,
     controlAssetGroups,
   };
 }
@@ -106,9 +99,7 @@ export async function importAssessment(payload: AssessmentExportPayload): Promis
   await db.transaction("rw", ASSESSMENT_TABLES(), async () => {
     await db.assessments.put(payload.assessment);
     await db.assessmentControls.bulkPut(payload.assessmentControls);
-    if (payload.assets?.length) await db.assets.bulkPut(payload.assets);
     if (payload.assetGroups?.length) await db.assetGroups.bulkPut(payload.assetGroups);
-    if (payload.assetGroupMembers?.length) await db.assetGroupMembers.bulkPut(payload.assetGroupMembers);
     if (payload.controlAssetGroups?.length) await db.controlAssetGroups.bulkPut(payload.controlAssetGroups);
   });
 }
@@ -117,17 +108,12 @@ export async function deleteAssessment(assessmentId: string): Promise<void> {
   await db.transaction("rw", ASSESSMENT_TABLES(), async () => {
     await db.assessments.delete(assessmentId);
     const controlIds = await db.assessmentControls.where("assessmentId").equals(assessmentId).primaryKeys();
-    await db.assessmentControls.bulkDelete(controlIds);
-
     const groupIds = await db.assetGroups.where("assessmentId").equals(assessmentId).primaryKeys();
-    const memberIds = await db.assetGroupMembers.where("groupId").anyOf(groupIds).primaryKeys();
-    const assetIds = await db.assets.where("assessmentId").equals(assessmentId).primaryKeys();
     const mappingIds = await db.controlAssetGroups.where("assessmentId").equals(assessmentId).primaryKeys();
 
     await Promise.all([
+      db.assessmentControls.bulkDelete(controlIds),
       db.assetGroups.bulkDelete(groupIds),
-      db.assetGroupMembers.bulkDelete(memberIds),
-      db.assets.bulkDelete(assetIds),
       db.controlAssetGroups.bulkDelete(mappingIds),
     ]);
   });
