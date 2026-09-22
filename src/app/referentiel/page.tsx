@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { Search } from "lucide-react";
 import { db } from "@/lib/db";
-import { BASELINES } from "@/lib/types";
+import { BASELINES, sortByCsfFunctionOrder } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -148,7 +148,7 @@ function CsfBrowser() {
 
   return (
     <div className="mt-3 space-y-3">
-      {(functions ?? []).map((fn) => (
+      {sortByCsfFunctionOrder(functions ?? []).map((fn) => (
         <div key={fn.id} className="rounded-md border border-border bg-surface p-4">
           <h3 className="text-[13px] font-medium">
             {fn.id} — {csfFunctionTitle(fn, lang)}

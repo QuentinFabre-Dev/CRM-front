@@ -1,5 +1,20 @@
 export type Baseline = "low" | "moderate" | "high" | "privacy";
 
+/**
+ * Ordre canonique des fonctions NIST CSF 2.0. IndexedDB (via Dexie) retourne
+ * les fonctions par ordre de clé primaire, donc alphabétique (DE, GV, ID,
+ * PR, RC, RS) — jamais l'ordre du framework. On retrie systématiquement à
+ * l'affichage avec cette liste plutôt que de se fier à l'ordre de requête.
+ */
+export const CSF_FUNCTION_ORDER = ["GV", "ID", "PR", "DE", "RS", "RC"] as const;
+
+export function sortByCsfFunctionOrder<T extends { id: string }>(items: T[]): T[] {
+  return [...items].sort(
+    (a, b) => CSF_FUNCTION_ORDER.indexOf(a.id as (typeof CSF_FUNCTION_ORDER)[number]) -
+      CSF_FUNCTION_ORDER.indexOf(b.id as (typeof CSF_FUNCTION_ORDER)[number])
+  );
+}
+
 export const BASELINES: { id: Baseline; label: string }[] = [
   { id: "low", label: "Low" },
   { id: "moderate", label: "Moderate" },

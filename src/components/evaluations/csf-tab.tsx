@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { maturityColor, maturityLabel, average } from "@/lib/maturity";
 import { cn } from "@/lib/utils";
 import { useLang, csfFunctionTitle, csfCategoryTitle, csfSubcategoryText } from "@/lib/i18n";
+import { sortByCsfFunctionOrder } from "@/lib/types";
 
 export function CsfTab({
   assessmentId,
@@ -64,7 +65,7 @@ export function CsfTab({
         Maturité moyenne des contrôles NIST SP 800-53 en périmètre, agrégée par fonction, catégorie et
         sous-catégorie NIST CSF 2.0 (crosswalk officiel NIST OLIR).
       </p>
-      {(functions ?? []).map((fn) => {
+      {sortByCsfFunctionOrder(functions ?? []).map((fn) => {
         const fnCategories = (categories ?? []).filter((c) => c.functionId === fn.id);
         const fnScores = fnCategories.flatMap((cat) =>
           (subcategories ?? [])
