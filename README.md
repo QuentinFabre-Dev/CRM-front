@@ -52,11 +52,14 @@ node scripts/fetch-nist-data.mjs
   discussion, checklist des objectifs d'évaluation 800-53A, méthodes
   d'évaluation (EXAMINE/INTERVIEW/TEST), notation de maturité 0-5, preuves et
   notes.
-- **Actifs** — déclaration des actifs du client, regroupement (ex. « Serveurs de
-  production »), association de chaque groupe aux contrôles qui le concernent.
-  Chaque contrôle affiche alors la liste des actifs à couvrir et un indicateur
-  de couverture, pour s'assurer qu'un contrôle est vérifié sur l'ensemble des
-  actifs applicables.
+- **Actifs** — périmètre raisonné par catégorie d'actifs (serveur physique, VM,
+  instance infonuagique, SaaS, conteneur, poste, mobile, réseau, base de
+  données, application, annuaire/IAM, stockage, site, OT/IoT), pas par machine.
+  « Proposer un mapping » rattache chaque contrôle aux catégories pertinentes
+  selon sa famille SP 800-53 ; le résultat s'ajuste catégorie par catégorie.
+  Chaque contrôle affiche ensuite les catégories à couvrir et un indicateur de
+  couverture. Les familles organisationnelles (AT, CA, IR, PL, PM, PS, RA, SR)
+  restent hors périmètre d'actifs.
 - **CSF 2.0** — arbre Functions → Categories → Subcategories, coloré par
   maturité moyenne des contrôles mappés (crosswalk officiel), navigation vers
   les contrôles sources.
